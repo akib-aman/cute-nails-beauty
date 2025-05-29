@@ -1,2 +1,2 @@
-# cute-nails-beauty
+# Cute Nails & Beauty
 Official Website for Cute
