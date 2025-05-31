@@ -16,7 +16,7 @@ const Newsletter = () => {
 
                             <div>
                                 <div className="relative text-white focus-within:text-white flex flex-row-reverse shadow-fi rounded-full">
-                                    <input type="Email address" name="q" className="py-6 sm:py-8 text-sm w-full text-black dark:text-white rounded-full pl-4 par-87 focus:outline-none focus:text-black" placeholder="@ enter your email-address" autoComplete="off" />
+                                    <input type="Email address" name="q" className="py-6 sm:py-8 text-sm w-full text-black rounded-full pl-4 par-87 focus:outline-none focus:text-black" placeholder="@ enter your email-address" autoComplete="off" />
                                     <div className="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <button type="submit" className="p-2 bg-gray-900 hover:scale-110 duration-300 rounded-full">
                                             <Icon

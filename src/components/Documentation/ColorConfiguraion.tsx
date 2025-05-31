@@ -10,7 +10,7 @@ export const ColorConfiguration = () => {
           <br />
           For any change in colors : tailwind.config.ts
         </p>
-        <div className="py-4 px-5 rounded-md bg-dark_grey mt-8">
+        <div className="py-4 px-5 rounded-md mt-8">
           <p className="text-sm text-gray-400 flex flex-col gap-2">
             <span>primary: "#99E39E",</span>
             <span>secondary: "#1DC8CD",</span>
@@ -42,7 +42,7 @@ export const ColorConfiguration = () => {
           <br />
           For change , go to : tailwind.config.ts
         </p>
-        <div className="py-4 px-5 rounded-md bg-dark_grey mt-8">
+        <div className="py-4 px-5 rounded-md mt-8">
           <p className="text-sm text-gray-400 flex flex-col gap-2">
             <span>primary: "#2CDD9B",</span>
             <span>secondary: "#1DC8CD",</span>

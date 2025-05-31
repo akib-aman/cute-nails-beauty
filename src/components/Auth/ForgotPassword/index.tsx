@@ -46,12 +46,12 @@ const ForgotPassword = () => {
   };
 
   return (
-    <section className="bg-[#F4F7FF] py-14 dark:bg-dark lg:py-20">
+    <section className="bg-[#F4F7FF] py-14 lg:py-20">
       <div className="container">
         <div className="-mx-4 flex flex-wrap">
           <div className="w-full px-4">
             <div
-              className="wow fadeInUp relative mx-auto max-w-[525px] overflow-hidden rounded-lg bg-white px-8 py-14 text-center dark:bg-dark-2 sm:px-12 md:px-[60px]"
+              className="wow fadeInUp relative mx-auto max-w-[525px] overflow-hidden rounded-lg bg-white px-8 py-14 text-center sm:px-12 md:px-[60px]"
               data-wow-delay=".15s"
             >
               <div className="mb-10 text-center">
@@ -61,14 +61,14 @@ const ForgotPassword = () => {
                     alt="logo"
                     width={140}
                     height={30}
-                    className="dark:hidden"
+                    className="hidden"
                   />
                   <Image
                     src="/images/logo/logo-white.svg"
                     alt="logo"
                     width={140}
                     height={30}
-                    className="hidden dark:block"
+                    className="hidden block"
                   />
                 </Link>
               </div>
@@ -82,7 +82,7 @@ const ForgotPassword = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-dark outline-none transition placeholder:text-dark-6 focus:border-primary focus-visible:shadow-none dark:border-dark-3 dark:text-white dark:focus:border-primary"
+                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-3 text-base text-dark outline-none transition placeholder:text-dark-6 focus:border-primary focus-visible:shadow-none border-dark-3 text-white focus:border-primary"
                   />
                 </div>
                 <div className="">

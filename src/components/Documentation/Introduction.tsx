@@ -102,12 +102,12 @@ export const Introduction = () => {
       </div>
 
       <div
-        className={`lg:hidden block fixed top-0 right-0 h-full w-full bg-white dark:bg-dark shadow-lg transform transition-transform duration-300 max-w-xs ${
+        className={`lg:hidden block fixed top-0 right-0 h-full w-full bg-white shadow-lg transform transition-transform duration-300 max-w-xs ${
           docNavbarOpen ? "translate-x-0" : "translate-x-full"
         } z-50`}
       >
         <div className="flex items-center justify-between p-4">
-          <h2 className="text-lg font-bold text-midnight_text dark:text-white">
+          <h2 className="text-lg font-bold text-midnight_text text-white">
             Docs Menu
           </h2>
           <button
@@ -119,7 +119,7 @@ export const Introduction = () => {
               width="24"
               height="24"
               viewBox="0 0 24 24"
-              className="dark:text-white"
+              className="text-white"
             >
               <path
                 fill="none"

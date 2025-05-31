@@ -53,10 +53,10 @@ const NotFound = () => {
                   />
                 </svg>
               </div>
-              <h3 className="mb-5 text-2xl font-semibold text-dark dark:text-white">
+              <h3 className="mb-5 text-2xl font-semibold text-dark">
                 We Can&#39;t Seem to Find The Page You&#39;re Looking For.
               </h3>
-              <p className="mb-8 text-base text-body-color dark:text-dark-6">
+              <p className="mb-8 text-base text-body-color ">
                 Oops! The page you are looking for does not exist. It might have
                 been moved or deleted.
               </p>

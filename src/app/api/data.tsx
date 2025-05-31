@@ -3,27 +3,31 @@ export const FeaturesData: {
   heading: string;
   subheading: string;
 }[] = [
+    // {
+    //   imgSrc: '/images/features/featureOne.svg',
+    //   heading: "Menu variations",
+    //   subheading: "Sed ut perspiciatis unde omnis iste natus error",
+    // },
     {
-      imgSrc: '/images/features/featureOne.svg',
-      heading: "Menu variations",
+      imgSrc: '/images/features/nails-1.png',
+      heading: "Vinylux Nails",
       subheading: "Sed ut perspiciatis unde omnis iste natus error",
     },
     {
-      imgSrc: '/images/features/featureTwo.svg',
-      heading: "Cooking warw",
+      imgSrc: '/images/features/shellacs-1.png',
+      heading: "Shallac Nails & Pedicure",
       subheading: "Sed ut perspiciatis unde omnis iste natus error",
     },
     {
-      imgSrc: '/images/features/featureThree.svg',
-      heading: "Best chef",
+      imgSrc: '/images/features/waxing-1.jpg',
+      heading: "Waxing",
       subheading: "Sed ut perspiciatis unde omnis iste natus error",
     },
     {
       imgSrc: '/images/features/featureFour.svg',
-      heading: "Fast food",
+      heading: "Eyebrows & Eyelashes",
       subheading: "Sed ut perspiciatis unde omnis iste natus error",
-    }
-
+    },
   ]
 
 export const ExpertData: {

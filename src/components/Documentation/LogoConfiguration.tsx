@@ -10,7 +10,7 @@ export const LogoConfiguration = () => {
             src/components/Layout/Header/Logo/index.tsx
           </span>{" "}
         </p>
-        <div className="py-4 px-3 rounded-md bg-dark_grey mt-8">
+        <div className="py-4 px-3 rounded-md mt-8">
           <div className="text-sm text-gray-400">
             <p>&#x3C;Link href=&#x22;/&#x22;&#x3E;</p>
             <p>&#x3C;Image</p>

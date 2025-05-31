@@ -7,7 +7,7 @@ export const TypographyConfiguration = () => {
           1. Change Font family over here :{" "}
           <span className="font-semibold text-base">src/app/layout.tsx</span>{" "}
         </p>
-        <div className="py-4 px-3 rounded-md bg-dark_grey mt-8">
+        <div className="py-4 px-3 rounded-md mt-8">
           <p className="text-sm text-gray-400 flex flex-col gap-2 mb-3">
             {`import { Montserrat } from "next/font/google";`}
           </p>

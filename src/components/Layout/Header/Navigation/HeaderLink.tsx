@@ -24,7 +24,7 @@ const HeaderLink: React.FC<{ item: HeaderItem }> = ({ item }) => {
     >
       <Link
         href={item.href}
-        className={`text-xl flex font-medium duration-300  ${path === item.href ? "text-primary " : " text-black/50 dark:text-white/50 hover:text-primary dark:hover:text-primary"
+        className={`text-xl flex font-medium duration-300  ${path === item.href ? "text-primary " : " text-white hover:text-black/50"
           }`}
       >
         {item.label}
@@ -48,7 +48,7 @@ const HeaderLink: React.FC<{ item: HeaderItem }> = ({ item }) => {
       </Link>
       {submenuOpen && (
         <div
-          className={`absolute py-2 left-0 mt-0.5 w-60 bg-white dark:bg-darklight dark:text-white shadow-lg rounded-lg `}
+          className={`absolute py-2 left-0 mt-0.5 w-60 bg-white shadow-lg rounded-lg `}
           data-aos="fade-up"
           data-aos-duration="500"
         >
@@ -58,7 +58,7 @@ const HeaderLink: React.FC<{ item: HeaderItem }> = ({ item }) => {
               href={subItem.href}
               className={`block px-4 py-2   ${path === subItem.href
                 ? "bg-primary text-white"
-                : "text-black dark:text-white hover:bg-primary"
+                : "text-black hover:bg-primary"
                 }`}
             >
               {subItem.label}

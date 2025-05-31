@@ -27,7 +27,7 @@ export const QuickStart = () => {
         <h6 className="mt-4 mb-2 text-white text-dark font-medium text-base">
           1) Install with npm:
         </h6>
-        <div className="py-4 px-3 rounded-md bg-dark_grey">
+        <div className="py-4 px-3 rounded-md">
           <p className="text-sm text-gray-400">
             <span className="text-yellow-500">cd</span> project-folder
           </p>
@@ -36,7 +36,7 @@ export const QuickStart = () => {
         <h6 className="mt-4 mb-2 text-white text-dark font-medium text-base">
           1) Install with yarn:
         </h6>
-        <div className="py-4 px-3 rounded-md bg-dark_grey">
+        <div className="py-4 px-3 rounded-md ">
           <p className="text-sm text-gray-400">
             <span className="text-yellow-500">cd</span> project-folder
           </p>
@@ -49,14 +49,14 @@ export const QuickStart = () => {
           Once npm install is done now you an run the app.
         </p>
 
-        <div className="py-4 px-3 rounded-md bg-dark_grey">
+        <div className="py-4 px-3 rounded-md ">
           <p className="text-sm text-gray-400">npm run dev or yarn run dev</p>
         </div>
         <p className="text-base font-medium text-muted text-opacity-60 my-4">
           This command will start a local webserver{" "}
-          <span className="dark:text-white">http://localhost:3000:</span>
+          <span className="text-white">http://localhost:3000:</span>
         </p>
-        <div className="py-4 px-3 rounded-md bg-dark_grey">
+        <div className="py-4 px-3 rounded-md ">
           <p className="text-sm text-gray-400">
             {"> crypgo_project@0.1.0 dev"}
           </p>
@@ -75,7 +75,7 @@ export const QuickStart = () => {
           After adding url run below command for build a app.
         </p>
 
-        <div className="py-4 px-3 rounded-md bg-dark_grey">
+        <div className="py-4 px-3 rounded-md ">
           <p className="text-sm text-gray-400">npm run build or yarn build</p>
         </div>
         <p className="text-base font-medium text-muted text-opacity-60 mt-6">

@@ -7,8 +7,6 @@ import Logo from "./Logo";
 import Image from "next/image";
 import HeaderLink from "../Header/Navigation/HeaderLink";
 import MobileHeaderLink from "../Header/Navigation/MobileHeaderLink";
-import Signin from "@/components/Auth/SignIn";
-import SignUp from "@/components/Auth/SignUp";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
@@ -71,43 +69,27 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-0 z-40 w-full transition-all duration-300 ${sticky ? " shadow-lg bg-white dark:bg-gray-600 py-4" : "shadow-none py-8"
+      className={`fixed top-0 z-40 w-full bg-primary transition-all duration-300 ${sticky ? " shadow-lg bg-primary py-4" : "shadow-none py-8"
         }`}
     >
       <div className="lg:py-0 py-2">
         <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md flex items-center justify-between px-4">
           <Logo />
-          <nav className="hidden lg:flex flex-grow items-center gap-8 justify-center">
+          <nav className="hidden lg:flex flex-grow items-center gap-32 justify-end">
             {headerData.map((item, index) => (
               <HeaderLink key={index} item={item} />
             ))}
           </nav>
           <div className="flex items-center gap-4">
-            <Link href="#" className="text-lg font-medium hover:text-primary">
-              <Icon
-                icon="solar:phone-bold"
-                className="text-primary text-3xl inline-block me-2"
-              />
-              +1(909) 235-9814
-            </Link>
-            <Link
-              href="#"
-              className="hidden lg:block text-primary bg-primary/15 hover:text-white hover:bg-primary font-medium text-lg py-4 px-8 rounded-full"
-              onClick={() => {
-                setIsSignInOpen(true);
-              }}
-            >
-              Sign In
-            </Link>
             {isSignInOpen && (
               <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div
                   ref={signInRef}
-                  className="relative mx-auto w-full max-w-md overflow-hidden rounded-lg px-8 pt-14 pb-8 text-center bg-white dark:bg-gray-600 bg-opacity-90 backdrop-blur-md"
+                  className="relative mx-auto w-full max-w-md overflow-hidden rounded-lg px-8 pt-14 pb-8 text-center bg-white bg-opacity-90 backdrop-blur-md"
                 >
                   <button
                     onClick={() => setIsSignInOpen(false)}
-                    className="absolute top-0 right-0 mr-8 mt-8 dark:invert"
+                    className="absolute top-0 right-0 mr-8 mt-8"
                     aria-label="Close Sign In Modal"
                   >
                     <Icon
@@ -115,28 +97,18 @@ const Header: React.FC = () => {
                       className="text-black hover:text-primary text-24 inline-block me-2"
                     />
                   </button>
-                  <Signin />
                 </div>
               </div>
             )}
-            <Link
-              href="#"
-              className="hidden lg:block bg-primary text-white hover:bg-primary/15 hover:text-primary font-medium text-lg py-4 px-8 rounded-full "
-              onClick={() => {
-                setIsSignUpOpen(true);
-              }}
-            >
-              Sign Up
-            </Link>
             {isSignUpOpen && (
               <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div
                   ref={signUpRef}
-                  className="relative mx-auto w-full max-w-md overflow-hidden rounded-lg bg-dark_grey bg-opacity-90 backdrop-blur-md px-8 pt-14 pb-8 text-center"
+                  className="relative mx-auto w-full max-w-md overflow-hidden rounded-lg bg-opacity-90 backdrop-blur-md px-8 pt-14 pb-8 text-center"
                 >
                   <button
                     onClick={() => setIsSignUpOpen(false)}
-                    className="absolute top-0 right-0 mr-8 mt-8 dark:invert"
+                    className="absolute top-0 right-0 mr-8 mt-8 "
                     aria-label="Close Sign Up Modal"
                   >
                     <Icon
@@ -144,7 +116,6 @@ const Header: React.FC = () => {
                       className="text-white hover:text-primary text-24 inline-block me-2"
                     />
                   </button>
-                  <SignUp />
                 </div>
               </div>
             )}
@@ -160,7 +131,7 @@ const Header: React.FC = () => {
           </div>
         </div>
         {navbarOpen && (
-          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-40" />
+          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 z-40" />
         )}
         <div
           ref={mobileMenuRef}
@@ -168,42 +139,22 @@ const Header: React.FC = () => {
             } z-50`}
         >
           <div className="flex items-center justify-between p-4">
-            <h2 className="text-lg font-bold text-midnight_text dark:text-midnight_text">
+            <h2 className="text-lg font-bold text-midnight_text ">
               <Logo />
             </h2>
 
             {/*  */}
             <button
               onClick={() => setNavbarOpen(false)}
-              className="bg-[url('/images/closed.svg')] bg-no-repeat bg-contain w-5 h-5 absolute top-0 right-0 mr-8 mt-8 dark:invert"
+              className="bg-[url('/images/closed.svg')] bg-no-repeat bg-contain w-6 h-6 absolute top-0 right-0 mr-5 mt-5"
               aria-label="Close menu Modal"
             ></button>
           </div>
           <nav className="flex flex-col items-start p-4">
             {headerData.map((item, index) => (
-              <MobileHeaderLink key={index} item={item} />
+              <MobileHeaderLink key={index} item={item} closeMenu={() => setNavbarOpen(false)} />
             ))}
             <div className="mt-4 flex flex-col space-y-4 w-full">
-              <Link
-                href="#"
-                className="bg-transparent border border-primary text-primary px-4 py-2 rounded-lg hover:bg-blue-600 hover:text-white"
-                onClick={() => {
-                  setIsSignInOpen(true);
-                  setNavbarOpen(false);
-                }}
-              >
-                Sign In
-              </Link>
-              <Link
-                href="#"
-                className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                onClick={() => {
-                  setIsSignUpOpen(true);
-                  setNavbarOpen(false);
-                }}
-              >
-                Sign Up
-              </Link>
             </div>
           </nav>
         </div>
