@@ -2,7 +2,7 @@ import React from "react";
 import Hero from "@/components/Home/Hero";
 import Treatments from "@/components/Home/Treatments";
 import Cook from "@/components/Home/Cook";
-import Expert from "@/components/Home/Expert";
+import Booking from "@/components/Home/Booking";
 import Gallery from "@/components/Home/Gallery";
 // import Newsletter from "@/components/Home/Newsletter";
 import { Metadata } from "next";
@@ -15,8 +15,7 @@ export default function Home() {
     <main>
       <Hero />
       <Treatments />
-      <Cook />
-      <Expert />
+      <Booking />
       <Gallery />
     </main>
   );

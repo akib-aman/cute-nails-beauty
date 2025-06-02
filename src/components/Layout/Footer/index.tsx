@@ -15,6 +15,9 @@ const Footer: FC = () => {
               Open an account in minutes, get full financial
               control for much longer.
             </p>
+
+            
+
             <div className="flex gap-6 items-center">
               <Link href="#" className="group bg-white hover:bg-primary rounded-full shadow-xl p-3">
                 <Icon
@@ -150,7 +153,7 @@ const Footer: FC = () => {
         </div>
         <div className="border-t border-grey/15 border-white/15 py-10 flex justify-between items-center">
           <p className="text-sm text-black/70 text-white/70">
-            @2025 - Chef's kitchen. Distributed By <Link href="https://themewagon.com/" target="_blank" className="hover:text-primary">ThemeWagon</Link> and Developed by <Link href="https://getnextjstemplates.com/" className="hover:text-primary">GetNextjsTemplates</Link>
+            @2025 Cute  All rights reserved.
           </p>
 
           <div className="">

@@ -6,11 +6,11 @@ import Link from 'next/link';
 
 const Gallery = () => {
     return (
-        <section>
+        <section className='bg-primary'>
             <div className='container mx-auto lg:max-w-screen-xl md:max-w-screen-md' id='gallery-section'>
                 <div className="text-center">
-                    <p className='text-primary text-lg font-normal mb-3 tracking-widest uppercase'>Our Gallery</p>
-                    <h2 className="text-3xl lg:text-5xl font-semibold text-black">
+                    <p className='text-white text-lg font-normal mb-3 tracking-widest uppercase'>Our Gallery</p>
+                    <h2 className="text-3xl lg:text-5xl font-semibold text-white">
                         Gallery of our cooked food.
                     </h2>
                 </div>

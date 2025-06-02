@@ -11,11 +11,11 @@ const Hero = () => {
                 <div className='grid grid-cols-1 lg:grid-cols-12 items-center'>
                     <div className='col-span-6'>
                         <h1 className="text-4xl lg:text-7xl font-semibold mb-5 text-primary md:4px lg:text-start text-center">
-                            Threading Nails & Beauty
+                            Threading, Nails & Beauty
                         </h1>
                         <p className='text-black lg:text-lg font-normal mb-10 lg:text-start text-center'>Cute is a beauty salon situated in Edinburgh that specializes in Eyebrow threading, waxing, nails and lashes.</p>
                         <div className='md:flex align-middle justify-center lg:justify-start'>
-                            <Link href='#about-section' className='flex border w-full md:w-auto mt-5 md:mt-0 bg-primary border-primary justify-center rounded-full text-xl font-medium items-center py-5 px-10 text-white hover:text-primary hover:bg-white'>Book Now!</Link>
+                            <Link href='#bookings-section' className='flex border w-full md:w-auto mt-5 md:mt-0 bg-primary border-primary justify-center rounded-full text-xl font-medium items-center py-5 px-10 text-white hover:text-primary hover:bg-white'>Book Now!</Link>
                         </div>
                     </div>
                     <div className='col-span-6 flex justify-center relative'>
