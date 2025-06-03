@@ -14,7 +14,7 @@ const Gallery = () => {
                         Quality is our priority
                     </h2>
                 </div>
-                <div className="my-16 px-6">
+                <div className="my-16 px-6 grid-cols-2">
                     <Masonry
                         breakpointCols={{ 'default': 2, '700': 2, '500': 1 }}
                         className="flex gap-6"

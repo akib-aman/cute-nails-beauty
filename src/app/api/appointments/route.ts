@@ -5,6 +5,7 @@ import { parseISO, addMinutes, isBefore, isAfter } from 'date-fns';
 interface Booking {
   name: string;
   email: string;
+  phonenumber: string;
   start: string;       // ISO string
   end: string;         // ISO string
   treatments: { name: string; price: number }[];
@@ -73,7 +74,7 @@ const parseDuration = (treatmentName: string): number => {
  */
 export async function POST(req: Request) {
   try {
-    const { name, email, date, treatments, total } = await req.json();
+    const { name, email, phonenumber, date, treatments, total } = await req.json();
 
     if (!name || !email || !date || !Array.isArray(treatments)) {
       return NextResponse.json({ success: false, message: 'All fields required.' }, { status: 400 });
@@ -116,6 +117,7 @@ export async function POST(req: Request) {
     bookings.push({
       name,
       email,
+      phonenumber,
       start: startDate.toISOString(),
       end: endDate.toISOString(),
       treatments,
@@ -132,7 +134,7 @@ export async function POST(req: Request) {
       sendEmail(
         process.env.MANAGER_EMAIL!,
         'New Appointment Booked',
-        createManagerEmailBody(name, email, startDate, endDate, treatments, total)
+        createManagerEmailBody(name, email, phonenumber, startDate, endDate, treatments, total)
       ),
     ]);
 
@@ -233,6 +235,7 @@ END:VCALENDAR"
 const createManagerEmailBody = (
   name: string,
   email: string,
+  phonenumber: string,
   start: Date,
   end: Date,
   treatments: { name: string; price: number }[],
@@ -245,6 +248,7 @@ const createManagerEmailBody = (
   return `
     <h2>New Booking Received</h2>
     <p><strong>Client:</strong> ${name} (${email})</p>
+    <p><strong>Client Phone Number:</strong> ${phonenumber}</p>
     <p><strong>Date & Time:</strong> ${start.toLocaleString()} – ${end.toLocaleTimeString()}</p>
     <p><strong>Treatments:</strong></p>
     <ul>${treatmentList}</ul>

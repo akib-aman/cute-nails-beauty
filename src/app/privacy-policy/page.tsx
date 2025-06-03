@@ -8,6 +8,7 @@ const PrivacyPolicyPage = () => (
     <ul className="list-disc ml-6">
       <li>Full Name</li>
       <li>Email Address</li>
+      <li>Phone Number</li>
       <li>Appointment Time</li>
     </ul>
     <h2 className="mt-6 font-semibold">How We Use It</h2>

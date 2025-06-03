@@ -16,10 +16,12 @@ const Booking = () => {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phonenumber, setNumber] = useState("");
   const [date, setDate] = useState<Date | null>(null);
   const [selectedTreatments, setSelectedTreatments] = useState<{ name: string; price: number }[]>([]);
   const [bookedSlots, setBookedSlots] = useState<{ start: Date; end: Date }[]>([]);
   const [recaptchaPassed, setRecaptchaPassed] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Fetch existing bookings on mount
   useEffect(() => {
@@ -50,8 +52,8 @@ const Booking = () => {
   const next = async () => {
 
 
-    if (step === 0 && (!name.trim() || !email.trim())) {
-      return alert("Please enter both name and email");
+    if (step === 0 && (!name.trim() || !email.trim() || !phonenumber.trim())) {
+      return alert("Please enter name, email and phone number");
     }
     if (step === 1 && selectedTreatments.length === 0) {
       return alert("Please select at least one treatment");
@@ -100,11 +102,11 @@ const Booking = () => {
     const res = await fetch("/api/appointments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, date, treatments: selectedTreatments, total: totalPrice }),
+      body: JSON.stringify({ name, email, phonenumber, date, treatments: selectedTreatments, total: totalPrice }),
     });
     const data = await res.json();
     if (data.success) {
-      alert("Booking confirmed!");
+      alert("Booking confirmed! Please check your emails for a receipt.");
     } else {
       alert(data.message);
     }
@@ -157,6 +159,14 @@ const Booking = () => {
                 className="w-full border p-2 rounded bg-gray-50"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <input
+                type="phonenumber"
+                placeholder="Your Phone Number"
+                className="w-full border p-2 rounded bg-gray-50"
+                value={phonenumber}
+                onChange={(e) => setNumber(e.target.value)}
                 required
               />
             </div>
@@ -265,7 +275,7 @@ const Booking = () => {
             <div>
               {email.trim() === '' ? (
                 <p className="text-red-600 font-medium">
-                  Please enter your email first to see available slots.
+                  Please enter your email and number first to see available slots.
                 </p>
               ) : (
                 <DatePicker
@@ -295,6 +305,9 @@ const Booking = () => {
                 <strong>Email:</strong> {email}
               </p>
               <p>
+                <strong>Phone number:</strong> {phonenumber}
+              </p>
+              <p>
                 <strong>Time:</strong> {date?.toLocaleString()}
               </p>
               <p>
@@ -308,11 +321,34 @@ const Booking = () => {
                 ))}
               </ul>
               <p className="font-semibold">Total: £{totalPrice.toFixed(2)}</p>
+
+              <div className="flex items-start justify-center gap-2 mt-4">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-1 h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-700 text-left">
+                  I agree to the{" "}
+                  <a href="/terms-and-conditions" className="text-pink-600 underline hover:text-pink-800" target="_blank">
+                    terms and conditions
+                  </a>{" "}
+                  and{" "}
+                  <a href="/privacy-policy" className="text-pink-600 underline hover:text-pink-800" target="_blank">
+                    privacy policy
+                  </a>
+                </label>
+              </div>
+
               <button
                 onClick={handleSubmit}
-                disabled={!recaptchaPassed}
+                disabled={!recaptchaPassed || !agreedToTerms}
                 className={`bg-primary text-white font-semibold py-2 px-6 rounded-lg mt-4 transition ${
-                  recaptchaPassed ? 'hover:bg-pink-600 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+                  recaptchaPassed && agreedToTerms
+                    ? 'hover:bg-pink-600 cursor-pointer'
+                    : 'opacity-50 cursor-not-allowed'
                 }`}
               >
                 Book!
