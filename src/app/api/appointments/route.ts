@@ -1,46 +1,38 @@
 // app/api/appointments/route.ts
-import { NextResponse } from 'next/server';
-import { parseISO, addMinutes, isBefore, isAfter } from 'date-fns';
 
-interface Booking {
+import { NextResponse } from 'next/server';
+import { parseISO, addMinutes, isBefore } from 'date-fns';
+import { PrismaClient } from '@prisma/client';
+import nodemailer from 'nodemailer';
+
+const prisma = new PrismaClient();
+
+interface BookingPayload {
   name: string;
   email: string;
   phonenumber: string;
-  start: string;       // ISO string
-  end: string;         // ISO string
+  date: string; // ISO from frontend
   treatments: { name: string; price: number }[];
   total: number;
 }
 
-// In-memory booking store
-const bookings: Booking[] = [];
-
-/**
- * Helper: parse a treatment name/time combo to minutes.
- * If treatment has no explicit time, default to 15 minutes.
- */
+// ─────────────────────────────────────────────────────────────────
+// Helper: parse a treatment name → duration in minutes
+// (reuse your existing logic; assumes TreatmentSections is unchanged)
+// ─────────────────────────────────────────────────────────────────
 const parseDuration = (treatmentName: string): number => {
-  // We need to look up the `"time"` value for this treatmentName in data.tsx
-  // data.tsx exports TreatmentSections. We can import that here.
-  // But since this file lives under /app/api, using direct import might need a relative path.
-  // Simpler: require the data file.
   const { TreatmentSections } = require('@/app/api/data');
 
-  // Search for the treatmentName across all sections
   for (const section of TreatmentSections) {
     for (const treat of section.treatments) {
-      // If treat.name matches exactly, and has a `time` field:
       if (treat.name === treatmentName && treat.time) {
-        // treat.time might be like "30 mins" or "1 hr" etc.
         const parts = treat.time.match(/(\d+)(?:\s*hr)?(?:\s*(\d+)\s*min)?/);
         if (parts) {
           let total = 0;
           if (parts[1]) {
-            // Check if there's "hr" in the string
             if (treat.time.includes('hr')) {
               total += parseInt(parts[1], 10) * 60;
             } else {
-              // It's probably minutes
               total += parseInt(parts[1], 10);
             }
           }
@@ -50,12 +42,9 @@ const parseDuration = (treatmentName: string): number => {
           return total;
         }
       }
-      // If treat has children, each child name includes time in name, so skip here.
       if (treat.children) {
-        // Find child by exact name
         for (const child of treat.children) {
           if (child.name === treatmentName) {
-            // child.name is like "File & Polish - 20 mins" or "Little Princess Minx - 30 mins"
             const childParts = child.name.match(/(\d+)\s*min/);
             if (childParts) {
               return parseInt(childParts[1], 10);
@@ -65,105 +54,13 @@ const parseDuration = (treatmentName: string): number => {
       }
     }
   }
-  // If we didn’t find a match, default to 15 minutes
+  // Default 30 minutes if not found
   return 30;
 };
 
-/**
- * POST handler: add a new booking
- */
-export async function POST(req: Request) {
-  try {
-    const { name, email, phonenumber, date, treatments, total } = await req.json();
-
-    if (!name || !email || !date || !Array.isArray(treatments)) {
-      return NextResponse.json({ success: false, message: 'All fields required.' }, { status: 400 });
-    }
-
-    // Compute total duration in minutes:
-    let totalDuration = 0;
-    for (const t of treatments) {
-      totalDuration += parseDuration(t.name);
-    }
-
-    // Construct start and end as ISO strings
-    const startDate = parseISO(date as string);
-    const endDate = addMinutes(startDate, totalDuration);
-
-    // Check booking limit per email (max 3):
-    const now = new Date();
-    const past24hrs = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const existingByEmail = bookings.filter(
-      (b) => b.email === email && parseISO(b.start) > past24hrs
-    );
-
-    // Check for time-slot conflicts:
-    for (const b of bookings) {
-      const existingStart = parseISO(b.start);
-      const existingEnd = parseISO(b.end);
-      // Conflict if (newStart < existingEnd) AND (existingStart < newEnd)
-      if (
-        isBefore(startDate, existingEnd) &&
-        isBefore(existingStart, endDate)
-      ) {
-        return NextResponse.json({
-          success: false,
-          message: 'This time slot is already taken. Please choose another.',
-        }, { status: 409 });
-      }
-    }
-
-    // Save booking
-    bookings.push({
-      name,
-      email,
-      phonenumber,
-      start: startDate.toISOString(),
-      end: endDate.toISOString(),
-      treatments,
-      total,
-    });
-
-    // Send emails (client + manager)
-    await Promise.all([
-      sendEmail(
-        email,
-        'Your Appointment Confirmation',
-        createClientEmailBody(name, startDate, endDate, treatments, total)
-      ),
-      sendEmail(
-        process.env.MANAGER_EMAIL!,
-        'New Appointment Booked',
-        createManagerEmailBody(name, email, phonenumber, startDate, endDate, treatments, total)
-      ),
-    ]);
-
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
-  }
-}
-
-/**
- * GET handler: return all bookings (with start/end)
- */
-export async function GET() {
-  // Return an array of { start, end }
-  const result = bookings.map((b) => ({
-    start: b.start,
-    end: b.end,
-  }));
-  return NextResponse.json(result);
-}
-
-/**
- * Fake email sender: you’ll need a real SMTP or service like SendGrid.
- * For Netlify, configure the SMTP in environment variables and use e.g. Nodemailer.
- * Below is a skeleton using nodemailer.
- */
-import nodemailer from 'nodemailer';
-
+// ─────────────────────────────────────────────────────────────────
+// NodeMailer setup (same as before; make sure your env vars exist)
+// ─────────────────────────────────────────────────────────────────
 let transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
@@ -182,20 +79,38 @@ const sendEmail = (to: string, subject: string, html: string) => {
   });
 };
 
-/**
- * Create a simple HTML email for the client.
- * Include start/end times in `VEVENT` format so iOS Mail can detect it as a calendar invite.
- */
+// ─────────────────────────────────────────────────────────────────
+// Utility: format Date → ICS string (YYYYMMDDTHHMMSSZ)
+// ─────────────────────────────────────────────────────────────────
+const pad = (n: number) => (n < 10 ? '0' + n : n);
+const formatDateForICS = (d: Date) => {
+  return (
+    d.getUTCFullYear().toString() +
+    pad(d.getUTCMonth() + 1) +
+    pad(d.getUTCDate()) +
+    'T' +
+    pad(d.getUTCHours()) +
+    pad(d.getUTCMinutes()) +
+    pad(d.getUTCSeconds()) +
+    'Z'
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────
+// Build HTML email for client (includes an ICS download link)
+// ─────────────────────────────────────────────────────────────────
 const createClientEmailBody = (
   name: string,
   start: Date,
   end: Date,
   treatments: { name: string; price: number }[],
-  total: number,
+  total: number
 ) => {
   const eventStart = formatDateForICS(start);
   const eventEnd = formatDateForICS(end);
-  const treatmentList = treatments.map((t) => `<li>${t.name} – £${t.price.toFixed(2)}</li>`).join('');
+  const treatmentList = treatments
+    .map((t) => `<li>${t.name} – £${t.price.toFixed(2)}</li>`)
+    .join('');
 
   return `
     <h2>Hi ${name},</h2>
@@ -211,7 +126,7 @@ const createClientEmailBody = (
 
     <hr/>
 
-    <!-- Include iCal attachment as a pseudo-link for iOS to detect -->
+    <!-- ICS link for iOS/Mac to detect as a calendar invite -->
     <a href="data:text/calendar;charset=utf8,BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
@@ -223,15 +138,14 @@ SUMMARY:Cute Salon Appointment
 DESCRIPTION:Your appointment at Cute Salon
 END:VEVENT
 END:VCALENDAR"
-       download="appointment.ics"
-       style="display:none;">Download Calendar Invite</a>
+      download="appointment.ics"
+      style="display:none;">Download Calendar Invite</a>
   `;
 };
 
-/**
- * Create a plain HTML email for the manager.
- * iOS Mail will auto-detect the “BEGIN:VEVENT...” content.
- */
+// ─────────────────────────────────────────────────────────────────
+// Build HTML email for manager
+// ─────────────────────────────────────────────────────────────────
 const createManagerEmailBody = (
   name: string,
   email: string,
@@ -243,12 +157,14 @@ const createManagerEmailBody = (
 ) => {
   const eventStart = formatDateForICS(start);
   const eventEnd = formatDateForICS(end);
-  const treatmentList = treatments.map((t) => `<li>${t.name} – £${t.price.toFixed(2)}</li>`).join('');
+  const treatmentList = treatments
+    .map((t) => `<li>${t.name} – £${t.price.toFixed(2)}</li>`)
+    .join('');
 
   return `
     <h2>New Booking Received</h2>
     <p><strong>Client:</strong> ${name} (${email})</p>
-    <p><strong>Client Phone Number:</strong> ${phonenumber}</p>
+    <p><strong>Phone:</strong> ${phonenumber}</p>
     <p><strong>Date & Time:</strong> ${start.toLocaleString()} – ${end.toLocaleTimeString()}</p>
     <p><strong>Treatments:</strong></p>
     <ul>${treatmentList}</ul>
@@ -270,19 +186,147 @@ END:VCALENDAR
   `;
 };
 
-/**
- * Format Date object into ICS-compatible string: YYYYMMDDTHHMMSSZ
- */
-const pad = (n: number) => (n < 10 ? '0' + n : n);
-const formatDateForICS = (d: Date) => {
-  return (
-    d.getUTCFullYear().toString() +
-    pad(d.getUTCMonth() + 1) +
-    pad(d.getUTCDate()) +
-    'T' +
-    pad(d.getUTCHours()) +
-    pad(d.getUTCMinutes()) +
-    pad(d.getUTCSeconds()) +
-    'Z'
-  );
-};
+// ─────────────────────────────────────────────────────────────────
+// POST handler: create a new booking
+// ─────────────────────────────────────────────────────────────────
+export async function POST(req: Request) {
+  try {
+    // 1) Clean up old bookings whose end < now
+    await prisma.booking.deleteMany({
+      where: { end: { lt: new Date() } },
+    });
+
+    const { name, email, phonenumber, date, treatments, total } =
+      (await req.json()) as BookingPayload;
+
+    if (!name || !email || !date || !phonenumber || !Array.isArray(treatments)) {
+      return NextResponse.json(
+        { success: false, message: 'All fields required.' },
+        { status: 400 }
+      );
+    }
+
+    // 2) Compute total duration in minutes
+    let totalDuration = 0;
+    for (const t of treatments) {
+      totalDuration += parseDuration(t.name);
+    }
+
+    const startDate = parseISO(date);
+    const endDate = addMinutes(startDate, totalDuration);
+
+    // 3) Enforce max 3 bookings per email in last 24hrs
+    const now = new Date();
+    const past24hrs = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const recentCount = await prisma.booking.count({
+      where: {
+        email: email,
+        start: { gt: past24hrs },
+      },
+    });
+
+    if (recentCount >= 3) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'You already have 3 bookings in the past 24 hours. Please contact us if you need more.',
+        },
+        { status: 403 }
+      );
+    }
+
+    // 4) Check for time‐slot conflicts (overlap)
+    const conflict = await prisma.booking.findFirst({
+      where: {
+        AND: [
+          { start: { lt: endDate } },
+          { end: { gt: startDate } },
+        ],
+      },
+    });
+
+    if (conflict) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'This time slot is already taken. Please choose another.',
+        },
+        { status: 409 }
+      );
+    }
+
+    // 5) Create booking in DB
+    await prisma.booking.create({
+      data: {
+        name,
+        email,
+        phonenumber,
+        start: startDate,
+        end: endDate,
+        treatments: treatments, // Prisma auto‐serializes array → JSON
+        total,
+      },
+    });
+
+    // 6) Send confirmation emails
+    await Promise.all([
+      sendEmail(
+        email,
+        'Your Appointment Confirmation',
+        createClientEmailBody(name, startDate, endDate, treatments, total)
+      ),
+      sendEmail(
+        process.env.MANAGER_EMAIL!,
+        'New Appointment Booked',
+        createManagerEmailBody(
+          name,
+          email,
+          phonenumber,
+          startDate,
+          endDate,
+          treatments,
+          total
+        )
+      ),
+    ]);
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('[POST /api/appointments] Error:', err);
+    return NextResponse.json(
+      { success: false, message: 'Server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// GET handler: return all upcoming bookings (start/end only)
+// ─────────────────────────────────────────────────────────────────
+export async function GET() {
+  try {
+    // 1) Clean up old bookings whose end < now
+    await prisma.booking.deleteMany({
+      where: { end: { lt: new Date() } },
+    });
+
+    // 2) Fetch all future bookings
+    const rows = await prisma.booking.findMany({
+      select: { start: true, end: true },
+      orderBy: { start: 'asc' },
+    });
+
+    // Convert Date → ISO string
+    const result = rows.map((b) => ({
+      start: b.start.toISOString(),
+      end: b.end.toISOString(),
+    }));
+
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error('[GET /api/appointments] Error:', err);
+    return NextResponse.json([], { status: 500 });
+  }
+}

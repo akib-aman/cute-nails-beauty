@@ -49,8 +49,26 @@ const Booking = () => {
 
   const totalPrice = selectedTreatments.reduce((sum, t) => sum + t.price, 0);
 
-  const next = async () => {
 
+  const filterAvailableTimes = (time: Date) => {
+    if (!date) return true;
+
+    const now = new Date();
+
+    // 1) If `time` is today AND time < now → block
+    if (isSameDay(time, now) && isBefore(time, now)) {
+      return false;
+    }
+
+    // 2) Block if it overlaps ANY existing booking on that same date:
+    return !bookedSlots.some((slot) =>
+      isSameDay(slot.start, date) &&
+      isBefore(time, slot.end) &&
+      isBefore(slot.start, time)
+    );
+  };
+
+  const next = async () => {
 
     if (step === 0 && (!name.trim() || !email.trim() || !phonenumber.trim())) {
       return alert("Please enter name, email and phone number");
@@ -73,6 +91,22 @@ const Booking = () => {
     )}
     // If going to step 3, run reCAPTCHA
     if (step === 2) {
+
+      <DatePicker
+        selected={date}
+        onChange={(d) => setDate(d)}
+        showTimeSelect
+        timeIntervals={15}
+        dateFormat="MMMM d, yyyy h:mm aa"
+        minDate={new Date()}                  // block any date < today
+        filterDate={(d) => !isSunday(d)}      // still skip Sundays
+        filterTime={filterAvailableTimes}     // block “past‐today” + overlaps
+        placeholderText="Pick a Date & Time!"
+        minTime={setHours(setMinutes(new Date(), 0), 11)} // 11:00
+        maxTime={setHours(setMinutes(new Date(), 0), 17)} // 17:00
+        className="w-full border p-2 rounded bg-gray-50"
+        required
+      />
       try {
         const recaptcha = await load(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!);
         const token = await recaptcha.execute("book_appointment");
@@ -112,19 +146,6 @@ const Booking = () => {
     }
   };
 
-  // When a date is selected, filter out times that conflict with existing bookings on that day
-  const filterAvailableTimes = (time: Date) => {
-    if (!date) return true; // no need to filter before a date is chosen
-
-    // We only filter if `time` is on the same day as `date`
-    // But DatePicker calls filterTime with a Date whose date matches date’s date
-    // So just check overlapping
-    return !bookedSlots.some((slot) =>
-      isSameDay(slot.start, date) &&
-      isBefore(time, slot.end) &&
-      isAfter(time, new Date(slot.start.getTime() - 1))
-    );
-  };
 
   const excludedTimes = Array.from({ length: 13 }, (_, i) =>
     setHours(setMinutes(new Date(), 0), i)
@@ -273,9 +294,9 @@ const Booking = () => {
 
           {step === 2 && (
             <div>
-              {email.trim() === '' ? (
+              {email.trim() === "" ? (
                 <p className="text-red-600 font-medium">
-                  Please enter your email and number first to see available slots.
+                  Please enter your email and phone first to see available slots.
                 </p>
               ) : (
                 <DatePicker
@@ -284,6 +305,7 @@ const Booking = () => {
                   showTimeSelect
                   timeIntervals={15}
                   dateFormat="MMMM d, yyyy h:mm aa"
+                  minDate={new Date()}
                   filterDate={(d) => !isSunday(d)}
                   filterTime={filterAvailableTimes}
                   placeholderText="Pick a Date & Time!"
@@ -322,33 +344,45 @@ const Booking = () => {
               </ul>
               <p className="font-semibold">Total: £{totalPrice.toFixed(2)}</p>
 
-              <div className="flex items-start justify-center gap-2 mt-4">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="mt-1 h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
-                />
-                <label htmlFor="terms" className="text-sm text-gray-700 text-left">
-                  I agree to the{" "}
-                  <a href="/terms-and-conditions" className="text-pink-600 underline hover:text-pink-800" target="_blank">
-                    terms and conditions
-                  </a>{" "}
-                  and{" "}
-                  <a href="/privacy-policy" className="text-pink-600 underline hover:text-pink-800" target="_blank">
-                    privacy policy
-                  </a>
+              {/* Terms checkbox */}
+              <div className="flex flex-col items-center mt-6">
+                <label className="flex items-start gap-3 max-w-sm">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    className="mt-1 h-4 w-4 shrink-0 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                  />
+                  <span className="text-sm text-gray-700 text-left">
+                    I agree to the{" "}
+                    <a
+                      href="/terms-and-conditions"
+                      className="text-pink-600 underline hover:text-pink-800"
+                      target="_blank"
+                    >
+                      terms and conditions
+                    </a>{" "}
+                    &{" "}
+                    <a
+                      href="/privacy-policy"
+                      className="text-pink-600 underline hover:text-pink-800"
+                      target="_blank"
+                    >
+                      privacy policy
+                    </a>.
+                  </span>
                 </label>
               </div>
 
+              {/* Book button (disabled until reCAPTCHA passes & terms checked) */}
               <button
                 onClick={handleSubmit}
                 disabled={!recaptchaPassed || !agreedToTerms}
                 className={`bg-primary text-white font-semibold py-2 px-6 rounded-lg mt-4 transition ${
                   recaptchaPassed && agreedToTerms
-                    ? 'hover:bg-pink-600 cursor-pointer'
-                    : 'opacity-50 cursor-not-allowed'
+                    ? "hover:bg-pink-600 cursor-pointer"
+                    : "opacity-50 cursor-not-allowed"
                 }`}
               >
                 Book!
