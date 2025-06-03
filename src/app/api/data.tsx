@@ -11,23 +11,24 @@ export const FeaturesData: {
     {
       imgSrc: '/images/features/nails-1.png',
       heading: "Vinylux Nails",
-      subheading: "Sed ut perspiciatis unde omnis iste natus error",
+      subheading: "Long-lasting polish with a glossy finish",
     },
     {
       imgSrc: '/images/features/shellacs-1.png',
       heading: "Shellac Nails & Pedicure",
-      subheading: "Sed ut perspiciatis unde omnis iste natus error",
+      subheading: "Chip-free shine for hands and feet",
     },
     {
       imgSrc: '/images/features/waxing-1.jpg',
       heading: "Waxing & Threading",
-      subheading: "Sed ut perspiciatis unde omnis iste natus error",
+      subheading: "Smooth skin with expert shaping",
     },
     {
       imgSrc: '/images/features/eyes.png',
-      heading: "Eyebrows & Eyelashes",
-      subheading: "Sed ut perspiciatis unde omnis iste natus error",
+      heading: "Eyebrows & Lashes",
+      subheading: "Enhance your natural beauty",
     },
+
   ]
 
 // data.tsx
@@ -65,16 +66,8 @@ export const TreatmentSections: TreatmentSection[] = [
       },
       {
         name: 'Manicure with Top Coat Only',
-        children: [
-          {
-            name: '30 mins',
-            price: '£13',
-          },
-          {
-            name: '20 mins',
-            price: '£13',
-          },
-        ],
+        time: ' 20 mins',
+        price: '£13',
       },
       {
         name: 'Acrylic nails extension',
@@ -166,12 +159,12 @@ export const TreatmentSections: TreatmentSection[] = [
       {
         name: 'Facial Waxing',
         children: [
-          { name: 'Chin – 10 mins', price: '£5' },
-          { name: 'Lip – 10 mins', price: '£5' },
-          { name: 'Eyebrows – 15 mins', price: '£10' },
-          { name: 'Neck – 10 mins', price: '£6' },
-          { name: 'Sides – 10 mins', price: '£10' },
-          { name: 'Full Face – 20 mins', price: '£30' },
+          { name: 'Wax Chin – 10 mins', price: '£5' },
+          { name: 'Wax Lip – 10 mins', price: '£5' },
+          { name: 'Wax Eyebrows – 15 mins', price: '£10' },
+          { name: 'Wax Neck – 10 mins', price: '£6' },
+          { name: 'Wax Sides – 10 mins', price: '£10' },
+          { name: 'Wax Full Face – 20 mins', price: '£30' },
         ],
       },
       {
@@ -216,14 +209,15 @@ export const TreatmentSections: TreatmentSection[] = [
         name: 'Eyebrow & Eyelash Tinting',
         children: [
           { name: '10 mins', price: '£8' },
-          { name: '20 mins', price: '£8' },
+          { name: '15 mins', price: '£15' },
+          { name: '20 mins', price: '£22' },
         ],
       },
       {
         name: 'Eyebrows shape & tint',
         children: [
-          { name: '20 mins', price: '£17' },
-          { name: '30 mins', price: '£17' },
+          { name: '20 mins ', price: '£17' },
+          { name: '30 mins', price: '£28' },
         ],
       },
       {
@@ -262,32 +256,10 @@ export const TreatmentSections: TreatmentSection[] = [
 ];
 
 
-export const ExpertData: {
-  profession: string;
-  name: string;
-  imgSrc: string;
-}[] = [
-    {
-      profession: 'Senior Chef',
-      name: 'Shoo Thar Mien',
-      imgSrc: '/images/Expert/boyone.svg',
-    },
-    {
-      profession: 'Junior Chef',
-      name: 'Shoo Thar Mien',
-      imgSrc: '/images/Expert/boytwo.svg',
-    },
-    {
-      profession: 'Junior Chef',
-      name: 'Shoo Thar Mien',
-      imgSrc: '/images/Expert/girl.png',
-    }
-  ]
-
 // data.tsx
 export const galleryImages = [
-  { src: '/images/Gallery/foodone.jpg', name: 'Caesar Salad(187 Kcal)', price: 35 },
-  { src: '/images/Gallery/foodtwo.jpg', name: 'Christmas salad(118 Kcal)', price: 17 },
-  { src: '/images/Gallery/foodthree.jpg', name: 'Sauteed mushrooms with pumpkin and sweet pepper(238 kcal)', price: 45 },
-  { src: '/images/Gallery/foodfour.jpg', name: 'BBQ Chicken Feast Pizza(272 kcal)', price: 27 },
+  { src: '/images/Gallery/frenchgel-example.jpg', name: 'Acrylic nail extensions', price: 30 },
+  { src: '/images/Gallery/extensions-example.jpg', name: 'Lash Extensions - (Party Lashes) full set', price: 22 },
+  { src: '/images/Gallery/eyebrows-example.jpg', name: 'Eyebrows shape & tint', price: 17 },
+  { src: '/images/Gallery/shellac-example.jpg', name: 'Shellac Manicure', price: 22 },
 ];

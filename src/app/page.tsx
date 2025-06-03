@@ -1,7 +1,7 @@
 import React from "react";
 import Hero from "@/components/Home/Hero";
 import Treatments from "@/components/Home/Treatments";
-import Cook from "@/components/Home/Cook";
+import Contact from "@/components/Home/Contact";
 import Booking from "@/components/Home/Booking";
 import Gallery from "@/components/Home/Gallery";
 // import Newsletter from "@/components/Home/Newsletter";
@@ -17,6 +17,7 @@ export default function Home() {
       <Treatments />
       <Booking />
       <Gallery />
+      <Contact />
     </main>
   );
 }

@@ -20,7 +20,7 @@ const Hero = () => {
                     </div>
                     <div className='col-span-6 flex justify-center relative'>
                         <div className='flex bg-white p-2 gap-5 items-center bottom-2 right-2 rounded-xl absolute'>
-                            <p className='text-lg text-black font-normal'>📍 32 Duart Crescent <br /> EH4 7JP</p>
+                            <p className='text-lg text-black font-normal'>📍32 Duart Crescent <br/> EH4 7JP</p>
                         </div>
                         <Image src="/images/hero/frontpage.jpg" alt="nothing" width={1500} height={1900} className='rounded-xl mt-10' />
                     </div>
