@@ -12,7 +12,7 @@ interface BookingPayload {
   email: string;
   phonenumber: string;
   date: string; // ISO from frontend
-  treatments: { name: string; price: number }[];
+  treatments: { name: string; price: number; parent?: string }[];
   total: number;
 }
 
@@ -25,37 +25,31 @@ const parseDuration = (treatmentName: string): number => {
 
   for (const section of TreatmentSections) {
     for (const treat of section.treatments) {
-      if (treat.name === treatmentName && treat.time) {
-        const parts = treat.time.match(/(\d+)(?:\s*hr)?(?:\s*(\d+)\s*min)?/);
-        if (parts) {
-          let total = 0;
-          if (parts[1]) {
-            if (treat.time.includes('hr')) {
-              total += parseInt(parts[1], 10) * 60;
-            } else {
-              total += parseInt(parts[1], 10);
-            }
-          }
-          if (parts[2]) {
-            total += parseInt(parts[2], 10);
-          }
-          return total;
-        }
+      // Match top-level treatment
+      if (treat.name === treatmentName) {
+        const mins = extractMinutes(treat.time);
+        return mins ?? 20;
       }
+
+      // Match child treatments
       if (treat.children) {
         for (const child of treat.children) {
           if (child.name === treatmentName) {
-            const childParts = child.name.match(/(\d+)\s*min/);
-            if (childParts) {
-              return parseInt(childParts[1], 10);
-            }
+            const mins = extractMinutes(child.name); // name contains "– 30 mins"
+            return mins ?? 20;
           }
         }
       }
     }
   }
-  // Default 30 minutes if not found
-  return 30;
+
+  return 20; // fallback
+};
+
+const extractMinutes = (text: string | undefined): number | null => {
+  if (!text) return null;
+  const match = text.match(/(\d+)\s*(min|mins)/i);
+  return match ? parseInt(match[1], 10) : null;
 };
 
 // ─────────────────────────────────────────────────────────────────
@@ -103,13 +97,15 @@ const createClientEmailBody = (
   name: string,
   start: Date,
   end: Date,
-  treatments: { name: string; price: number }[],
+  treatments: { name: string; price: number; parent?: string }[],
   total: number
 ) => {
   const eventStart = formatDateForICS(start);
   const eventEnd = formatDateForICS(end);
   const treatmentList = treatments
-    .map((t) => `<li>${t.name} – £${t.price.toFixed(2)}</li>`)
+    .map((t) =>
+      `<li>${t.parent ? `${t.parent} – ` : ''}${t.name} – £${t.price.toFixed(2)}</li>`
+    )
     .join('');
 
   return `
@@ -152,13 +148,15 @@ const createManagerEmailBody = (
   phonenumber: string,
   start: Date,
   end: Date,
-  treatments: { name: string; price: number }[],
+  treatments: { name: string; price: number; parent?: string }[],
   total: number
 ) => {
   const eventStart = formatDateForICS(start);
   const eventEnd = formatDateForICS(end);
   const treatmentList = treatments
-    .map((t) => `<li>${t.name} – £${t.price.toFixed(2)}</li>`)
+    .map((t) =>
+      `<li>${t.parent ? `${t.parent} – ` : ''}${t.name} – £${t.price.toFixed(2)}</li>`
+    )
     .join('');
 
   return `

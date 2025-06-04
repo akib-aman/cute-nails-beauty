@@ -9,5 +9,5 @@ export async function POST(req: Request) {
   const res = await fetch(verifyUrl, { method: "POST" });
   const data = await res.json();
 
-  return NextResponse.json({ success: data.success && data.score > 0.5 });
+  return NextResponse.json({ success: data.success && data.score > 0 });
 }

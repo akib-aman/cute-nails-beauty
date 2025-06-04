@@ -18,7 +18,7 @@ const Booking = () => {
   const [email, setEmail] = useState("");
   const [phonenumber, setNumber] = useState("");
   const [date, setDate] = useState<Date | null>(null);
-  const [selectedTreatments, setSelectedTreatments] = useState<{ name: string; price: number }[]>([]);
+  const [selectedTreatments, setSelectedTreatments] = useState<{ name: string; price: number; parent?: string }[]>([]);
   const [bookedSlots, setBookedSlots] = useState<{ start: Date; end: Date }[]>([]);
   const [recaptchaPassed, setRecaptchaPassed] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -102,13 +102,13 @@ const Booking = () => {
         filterDate={(d) => !isSunday(d)}      // still skip Sundays
         filterTime={filterAvailableTimes}     // block “past‐today” + overlaps
         placeholderText="Pick a Date & Time!"
-        minTime={setHours(setMinutes(new Date(), 0), 11)} // 11:00
+        minTime={setHours(setMinutes(new Date(), 0), 10)} // 11:00
         maxTime={setHours(setMinutes(new Date(), 0), 17)} // 17:00
         className="w-full border p-2 rounded bg-gray-50"
         required
       />
       try {
-        const recaptcha = await load(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!);
+        const recaptcha = await load(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!); 
         const token = await recaptcha.execute("book_appointment");
         const res = await fetch("/api/recaptcha", {
           method: "POST",
@@ -141,6 +141,7 @@ const Booking = () => {
     const data = await res.json();
     if (data.success) {
       alert("Booking confirmed! Please check your emails for a receipt.");
+      location.reload();
     } else {
       alert(data.message);
     }
@@ -206,39 +207,47 @@ const Booking = () => {
                           <div key={treat.name} className="mb-2">
                             <p className="font-semibold">{treat.name}:</p>
                             <div className="pl-4">
-                              {treat.children.map((child: ChildTreatment) => {
-                                const priceNum = parseFloat(
-                                  child.price.replace(/[^0-9.]/g, "")
-                                );
-                                const isChecked = selectedTreatments.some(
-                                  (t) => t.name === child.name
-                                );
+                              {treat.children.map((child: ChildTreatment, index: number) => {
+                                const priceNum = parseFloat(child.price.replace(/[^0-9.]/g, ""));
+                                const isChecked = selectedTreatments.some((t) => t.name === child.name);
+
+                                const radioName = `group-${treat.name.replace(/\s+/g, '-')}`;
+                                const radioId = `${radioName}-${index}`;
+
                                 return (
                                   <label
                                     key={child.name}
+                                    htmlFor={radioId}
                                     className="flex items-center space-x-3 mb-1"
                                   >
                                     <input
-                                      type="checkbox"
+                                      type="radio"
+                                      id={radioId}
+                                      name={radioName}
                                       checked={isChecked}
-                                      onChange={(e) =>
-                                        toggleTreatment(
-                                          child.name,
-                                          priceNum,
-                                          e.target.checked
-                                        )
-                                      }
-                                      className="
-                                        form-checkbox h-4 w-4 text-pink-500
-                                        border-gray-300 rounded focus:ring-pink-400
-                                      "
+                                      onClick={() => {
+                                        setSelectedTreatments((prev) => {
+                                          const isAlreadySelected = prev.some((t) => t.name === child.name);
+
+                                          if (isAlreadySelected) {
+                                            // Deselect it
+                                            return prev.filter((t) => t.name !== child.name);
+                                          } else {
+                                            // Remove other children in group
+                                            const withoutGroup = prev.filter(
+                                              (t) =>
+                                                !(
+                                                  treat.children?.some((c) => c.name === t.name)
+                                                )
+                                            );
+                                            return [...withoutGroup, { name: child.name, price: priceNum, parent: treat.name }];
+                                          }
+                                        });
+                                      }}
+                                      className="form-radio h-4 w-4 text-pink-500 border-gray-300 focus:ring-pink-400"
                                     />
-                                    <span className="flex-1 text-gray-800">
-                                      {child.name}
-                                    </span>
-                                    <span className="text-gray-600">
-                                      {child.price}
-                                    </span>
+                                    <span className="flex-1 text-gray-800">{child.name}</span>
+                                    <span className="text-gray-600">{child.price}</span>
                                   </label>
                                 );
                               })}
@@ -309,7 +318,7 @@ const Booking = () => {
                   filterDate={(d) => !isSunday(d)}
                   filterTime={filterAvailableTimes}
                   placeholderText="Pick a Date & Time!"
-                  minTime={setHours(setMinutes(new Date(), 0), 11)}
+                  minTime={setHours(setMinutes(new Date(), 0), 10)}
                   maxTime={setHours(setMinutes(new Date(), 0), 17)}
                   className="w-full border p-2 rounded bg-gray-50"
                   required
@@ -338,7 +347,7 @@ const Booking = () => {
               <ul className="list-disc list-inside">
                 {selectedTreatments.map((t, i) => (
                   <li key={i}>
-                    {t.name} - £{t.price.toFixed(2)}
+                    {t.parent ? `${t.parent} – ${t.name}` : t.name} - £{t.price.toFixed(2)}
                   </li>
                 ))}
               </ul>
