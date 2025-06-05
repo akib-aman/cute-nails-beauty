@@ -1,19 +1,32 @@
 // prisma/schema.prisma
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // Keep output as default unless you have a strong reason to change it.
+  // The default output is `node_modules/.prisma/client`.
+  // If you must customize, ensure the path is correct relative to your project root.
+  // For Vercel, `/app/generated/prisma-client` is unlikely to be correct.
+  // Remove `output = "/app/generated/prisma-client"` for default behavior.
+  // If you need custom output, make sure it's a relative path from your project root.
+
+  // Required for using driver adapters for Edge Functions and connection pooling
+  // This helps with Vercel Postgres / Neon integration.
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Use the pooled URL for Prisma Client at runtime in production
+  url       = env("POSTGRES_PRISMA_URL")
+  // Use the non-pooling URL for direct connections (e.g., for `prisma migrate`)
+  directUrl = env("POSTES_URL_NON_POOLING") // <-- Fix this typo: POSTGRES_URL_NON_POOLING
 }
 
 // ─────────────────────────────────────────────────────────────────
 // Booking table: one row per appointment
 // ─────────────────────────────────────────────────────────────────
 model Booking {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String    @id @default(uuid()) // Use `uuid()` for a unique string ID
   name        String
   email       String
   phonenumber String
@@ -21,5 +34,7 @@ model Booking {
   end         DateTime
   treatments  Json
   total       Float
-  createdAt   DateTime @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  @@map("bookings")
 }
