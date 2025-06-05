@@ -19,7 +19,7 @@ model Booking {
   phonenumber String
   start       DateTime
   end         DateTime
-  treatments  String
+  treatments  Json
   total       Float
   createdAt   DateTime @default(now())
 }
