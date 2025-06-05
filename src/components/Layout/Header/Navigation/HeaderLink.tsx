@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { HeaderItem } from "../../../../types/menu";
+import { HeaderItem } from "./menu";
 import { usePathname } from "next/navigation";
 
 const HeaderLink: React.FC<{ item: HeaderItem }> = ({ item }) => {

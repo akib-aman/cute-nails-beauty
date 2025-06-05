@@ -9,18 +9,29 @@ import MobileHeaderLink from "../Header/Navigation/MobileHeaderLink";
 const Header: React.FC = () => {
   const [navbarOpen, setNavbarOpen] = useState(false);
   const [sticky, setSticky] = useState(false);
-
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000); // simulate loading
+    const timer = setTimeout(() => {
+      setFadeOut(true); // start fade
+      setTimeout(() => setLoading(false), 500); // hide after fade
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
-    return <PreLoader />;
+    return (
+      <div
+        className={`fixed inset-0 z-50 bg-white flex items-center justify-center transition-opacity duration-500 ${
+          fadeOut ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        <PreLoader />
+      </div>
+    );
   }
 
   return (
