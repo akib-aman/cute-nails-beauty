@@ -39,19 +39,8 @@ const Header: React.FC = () => {
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div
-        className={`fixed inset-0 z-50 bg-white flex items-center justify-center transition-opacity duration-500 ${
-          fadeOut ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <PreLoader />
-      </div>
-    );
-  }
-
   return (
+    <>
     <header
       className={`fixed top-0 z-40 w-full bg-primary transition-all duration-300 ${sticky ? " shadow-lg bg-primary py-4" : "shadow-none py-8"
         }`}
@@ -107,6 +96,18 @@ const Header: React.FC = () => {
         </div>
       </div>
     </header>
+
+    {/* PRELOADER OVERLAY */}
+      {loading && (
+        <div
+          className={`fixed inset-0 z-50 bg-white flex items-center justify-center transition-opacity duration-500 ${
+            fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
+        >
+          <PreLoader />
+        </div>
+      )}
+    </>
   );
 };
 
