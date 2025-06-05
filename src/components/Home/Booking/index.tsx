@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react"; // Added useMemo
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { isSunday, setHours, setMinutes, isSameDay, isAfter, isBefore } from "date-fns";
+import { isSunday, setHours, setMinutes, isSameDay, isAfter, isBefore, addMinutes } from "date-fns"; // Added addMinutes
 import {
   TreatmentSections,
   TreatmentSection,
@@ -10,6 +10,35 @@ import {
   ChildTreatment,
 } from "@/app/api/data";
 import { load } from 'recaptcha-v3';
+
+
+// Helper: parse a treatment name → duration in minutes
+// (This needs to be available on the frontend for time slot calculation)
+const extractMinutes = (text: string | undefined) => {
+  if (!text) return null;
+  const match = text.match(/(\d+)\s*(min|mins)/i);
+  return match ? parseInt(match[1], 10) : null;
+};
+
+const parseDurationFrontend = (treatmentName: string) => {
+  for (const section of TreatmentSections) {
+    for (const treat of section.treatments) {
+      if (treat.name === treatmentName) {
+        const mins = extractMinutes(treat.time);
+        return mins ?? 20; // Default to 20 minutes if no duration found
+      }
+      if (treat.children) {
+        for (const child of treat.children) {
+          if (child.name === treatmentName) {
+            const mins = extractMinutes(child.name);
+            return mins ?? 20; // Default to 20 minutes if no duration found
+          }
+        }
+      }
+    }
+  }
+  return 20; // Fallback
+};
 
 
 const Booking = () => {
@@ -49,9 +78,13 @@ const Booking = () => {
 
   const totalPrice = selectedTreatments.reduce((sum, t) => sum + t.price, 0);
 
+  // Calculate total duration based on selected treatments
+  const totalAppointmentDuration = useMemo(() => {
+    return selectedTreatments.reduce((sum, t) => sum + parseDurationFrontend(t.name), 0);
+  }, [selectedTreatments]);
 
   const filterAvailableTimes = (time: Date) => {
-    if (!date) return true;
+    if (!date) return true; // Allows initial selection of any date, actual time filtering happens when a date is picked.
 
     const now = new Date();
 
@@ -60,55 +93,33 @@ const Booking = () => {
       return false;
     }
 
+    // Calculate the end time of the proposed appointment slot
+    const proposedEndTime = addMinutes(time, totalAppointmentDuration);
+
     // 2) Block if it overlaps ANY existing booking on that same date:
     return !bookedSlots.some((slot) =>
-      isSameDay(slot.start, date) &&
-      isBefore(time, slot.end) &&
-      isBefore(slot.start, time)
+      isSameDay(slot.start, time) && // Only check slots on the same day
+      (
+        // Check for overlap: [proposed start, proposed end) overlaps with [slot start, slot end)
+        (isBefore(time, slot.end) && isBefore(slot.start, proposedEndTime))
+      )
     );
   };
 
   const next = async () => {
-
     if (step === 0 && (!name.trim() || !email.trim() || !phonenumber.trim())) {
       return alert("Please enter name, email and phone number");
     }
     if (step === 1 && selectedTreatments.length === 0) {
       return alert("Please select at least one treatment");
     }
-    {step < 3 && (
-      <button
-        onClick={next}
-        className={`px-4 py-2 rounded-lg ${
-          (step === 2 && (!date || email.trim() === '')) 
-            ? 'bg-gray-400 cursor-not-allowed' 
-            : 'bg-primary text-white hover:bg-pink-600'
-        }`}
-        disabled={step === 2 && (!date || email.trim() === '')}
-      >
-        Next
-      </button>
-    )}
-    // If going to step 3, run reCAPTCHA
+    // ReCAPTCHA is moved inside the step progression, not in the button render logic
     if (step === 2) {
-
-      <DatePicker
-        selected={date}
-        onChange={(d) => setDate(d)}
-        showTimeSelect
-        timeIntervals={15}
-        dateFormat="MMMM d, yyyy h:mm aa"
-        minDate={new Date()}                  // block any date < today
-        filterDate={(d) => !isSunday(d)}      // still skip Sundays
-        filterTime={filterAvailableTimes}     // block “past‐today” + overlaps
-        placeholderText="Pick a Date & Time!"
-        minTime={setHours(setMinutes(new Date(), 0), 10)} // 11:00
-        maxTime={setHours(setMinutes(new Date(), 0), 17)} // 17:00
-        className="w-full border p-2 rounded bg-gray-50"
-        required
-      />
+      if (!date) {
+        return alert("Please select a date and time");
+      }
       try {
-        const recaptcha = await load(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!); 
+        const recaptcha = await load(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!);
         const token = await recaptcha.execute("book_appointment");
         const res = await fetch("/api/recaptcha", {
           method: "POST",
@@ -126,7 +137,7 @@ const Booking = () => {
         alert("Could not verify reCAPTCHA.");
         return;
       }
-    }   
+    }
     setStep((s) => Math.min(s + 1, 3));
   };
 
@@ -147,10 +158,6 @@ const Booking = () => {
     }
   };
 
-
-  const excludedTimes = Array.from({ length: 13 }, (_, i) =>
-    setHours(setMinutes(new Date(), 0), i)
-  );
 
   return (
     <section className="bg-gray-50" id="bookings-section">
@@ -303,9 +310,9 @@ const Booking = () => {
 
           {step === 2 && (
             <div>
-              {email.trim() === "" ? (
+              {email.trim() === "" || phonenumber.trim() === "" ? ( // Check for both email and phone number
                 <p className="text-red-600 font-medium">
-                  Please enter your email and phone first to see available slots.
+                  Please enter your email and phone number first to see available slots.
                 </p>
               ) : (
                 <DatePicker
@@ -313,7 +320,7 @@ const Booking = () => {
                   onChange={(d) => setDate(d)}
                   showTimeSelect
                   timeIntervals={15}
-                  dateFormat="MMMM d, yyyy h:mm aa"
+                  dateFormat="MMMM d, yyyy h:mm aa" // Corrected dateFormat
                   minDate={new Date()}
                   filterDate={(d) => !isSunday(d)}
                   filterTime={filterAvailableTimes}
@@ -411,7 +418,18 @@ const Booking = () => {
             {step < 3 && (
               <button
                 onClick={next}
-                className="bg-primary text-white px-4 py-2 rounded-lg"
+                className={`px-4 py-2 rounded-lg ${
+                    (step === 0 && (!name.trim() || !email.trim() || !phonenumber.trim())) ||
+                    (step === 1 && selectedTreatments.length === 0) ||
+                    (step === 2 && !date)
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-primary text-white hover:bg-pink-600'
+                }`}
+                disabled={
+                    (step === 0 && (!name.trim() || !email.trim() || !phonenumber.trim())) ||
+                    (step === 1 && selectedTreatments.length === 0) ||
+                    (step === 2 && !date)
+                }
               >
                 Next
               </button>
