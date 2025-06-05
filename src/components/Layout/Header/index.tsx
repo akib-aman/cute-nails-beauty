@@ -15,11 +15,28 @@ const Header: React.FC = () => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
+    // Handle preloader
     const timer = setTimeout(() => {
       setFadeOut(true); // start fade
       setTimeout(() => setLoading(false), 500); // hide after fade
     }, 2000);
-    return () => clearTimeout(timer);
+
+    // Handle scroll-based sticky header (only on mobile)
+    const handleScroll = () => {
+      if (window.innerWidth <= 768) {
+        setSticky(window.scrollY > 20); // apply shrink when scrolled down a bit
+      } else {
+        setSticky(false); // don't shrink on desktop
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Cleanup both timer and scroll event
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   if (loading) {
