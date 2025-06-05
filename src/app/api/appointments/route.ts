@@ -104,26 +104,43 @@ const createClientEmailBody = (
   const eventEnd = formatDateForICS(end);
   const treatmentList = treatments
     .map((t) =>
-      `<li>${t.parent ? `${t.parent} – ` : ''}${t.name} – £${t.price.toFixed(2)}</li>`
+      `<li style="margin-bottom: 4px;">${t.parent ? `<strong>${t.parent}</strong> – ` : ''}${t.name} – £${t.price.toFixed(2)}</li>`
     )
     .join('');
 
   return `
-    <h2>Hi ${name},</h2>
-    <p>Thank you for booking with Cute! Here are your appointment details:</p>
-    <ul>
-      <li><strong>Date & Time:</strong> ${start.toLocaleString()} – ${end.toLocaleTimeString()}</li>
-      <li><strong>Treatments:</strong></li>
-      <ul>${treatmentList}</ul>
-      <li><b>Total: </b>£${total}</li>
-    </ul>
-    <p>We look forward to seeing you!</p>
-    <p>Cute Edinburgh</p>
+    <div style="font-family: Arial, sans-serif; color: #333; padding: 16px; max-width: 600px; margin: auto;">
+      <h2 style="color: #cf5888;">Hi ${name},</h2>
+      <p>Thanks for booking with <strong>Cute Edinburgh</strong>! Here are your appointment details:</p>
 
-    <hr/>
+      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Date & Time:</td>
+          <td style="padding: 8px;">${start.toLocaleString()} – ${end.toLocaleTimeString()}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold; vertical-align: top;">Treatments:</td>
+          <td style="padding: 8px;">
+            <ul style="padding-left: 20px; margin: 0;">
+              ${treatmentList}
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Total:</td>
+          <td style="padding: 8px;"><strong>£${total.toFixed(2)}</strong></td>
+        </tr>
+      </table>
 
-    <!-- ICS link for iOS/Mac to detect as a calendar invite -->
-    <a href="data:text/calendar;charset=utf8,BEGIN:VCALENDAR
+      <p>We can’t wait to see you!</p>
+      <p style="margin-bottom: 0;">Warm wishes,</p>
+      <p style="margin-top: 4px;">Cute Edinburgh</p>
+
+      <hr style="margin: 24px 0;" />
+
+      <!-- Hidden VCALENDAR for auto-detection -->
+      <div style="display: none; white-space: pre;">
+BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
 UID:${start.getTime()}@cutesalon.com
@@ -133,9 +150,9 @@ DTEND:${eventEnd}
 SUMMARY:Cute Salon Appointment
 DESCRIPTION:Your appointment at Cute Salon
 END:VEVENT
-END:VCALENDAR"
-      download="appointment.ics"
-      style="display:none;">Download Calendar Invite</a>
+END:VCALENDAR
+      </div>
+    </div>
   `;
 };
 
@@ -155,20 +172,45 @@ const createManagerEmailBody = (
   const eventEnd = formatDateForICS(end);
   const treatmentList = treatments
     .map((t) =>
-      `<li>${t.parent ? `${t.parent} – ` : ''}${t.name} – £${t.price.toFixed(2)}</li>`
+      `<li style="margin-bottom: 4px;">${t.parent ? `<strong>${t.parent}</strong> – ` : ''}${t.name} – £${t.price.toFixed(2)}</li>`
     )
     .join('');
 
   return `
-    <h2>New Booking Received</h2>
-    <p><strong>Client:</strong> ${name} (${email})</p>
-    <p><strong>Phone:</strong> ${phonenumber}</p>
-    <p><strong>Date & Time:</strong> ${start.toLocaleString()} – ${end.toLocaleTimeString()}</p>
-    <p><strong>Treatments:</strong></p>
-    <ul>${treatmentList}</ul>
-    <ul><b>Total: </b>£${total}</ul>
-    <hr/>
-    <pre>
+    <div style="font-family: Arial, sans-serif; color: #222; padding: 16px; max-width: 600px; margin: auto;">
+      <h2 style="color: #cf5888;">New Booking Received</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Client:</td>
+          <td style="padding: 8px;">${name} (<a href="mailto:${email}" style="color: #0066cc;">${email}</a>)</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Phone:</td>
+          <td style="padding: 8px;">${phonenumber}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Date & Time:</td>
+          <td style="padding: 8px;">${start.toLocaleString()} – ${end.toLocaleTimeString()}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold; vertical-align: top;">Treatments:</td>
+          <td style="padding: 8px;">
+            <ul style="padding-left: 20px; margin: 0;">
+              ${treatmentList}
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Total:</td>
+          <td style="padding: 8px;"><strong>£${total.toFixed(2)}</strong></td>
+        </tr>
+      </table>
+
+      <hr style="margin: 24px 0;" />
+
+      <!-- Hidden VCALENDAR block for email parsers -->
+      <div style="display: none; white-space: pre;">
 BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
@@ -180,7 +222,8 @@ SUMMARY:Appointment with ${name}
 DESCRIPTION:Booked Treatments:\\n${treatments.map((t) => t.name).join(', ')}
 END:VEVENT
 END:VCALENDAR
-    </pre>
+      </div>
+    </div>
   `;
 };
 

@@ -5,6 +5,13 @@ import Footer from "@/components/Layout/Footer";
 import { ThemeProvider } from "next-themes";
 import ScrollToTop from "@/components/ScrollToTop";
 const font = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], });
+import { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "Cute Nails & Beauty",
+  icons: {
+    icon: '/favicon.png',
+  },
+};
 
 export default function RootLayout({
   children,
