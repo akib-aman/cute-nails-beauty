@@ -41,7 +41,7 @@ const Treatments: React.FC = () => {
   return (
     <section className="bg-primary" id="treatments-section">
       {/* ← 1) RE-INSERT THIS GRID SO “Learn More” EXISTS → */}
-      <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md p-4 md:p-0">
+      <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md p-4">
         <div className="text-center mb-14">
           <p className="text-white text-lg font-normal mb-3 tracking-widest uppercase">
             Treatments
@@ -51,11 +51,11 @@ const Treatments: React.FC = () => {
           </h2>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-y-[5rem] gap-x-5 mt-28">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-y-[5rem] sm:gap-y-[8rem] mt-[6rem] sm:mt-[10rem] gap-x-5">
           {FeaturesData.map((item, i) => (
             <div key={i} className="p-8 relative rounded-3xl bg-gray-50">
               {/* (Optional) Icon/image at top */}
-              <div className="absolute work-img-bg rounded-full flex justify-center -top-[20%] sm:top-[-40%] md:top-[-55%] lg:top-[-25%] left-1/2 transform -translate-x-1/2">
+              <div className="absolute work-img-bg rounded-full flex justify-center -top-[20%] sm:top-[-40%] md:top-[-30%] lg:top-[-25%] left-1/2 transform -translate-x-1/2">
                 <Image
                   src={item.imgSrc}
                   alt={item.heading}
@@ -100,17 +100,18 @@ const Treatments: React.FC = () => {
       {modalOpen && selectedSection && (
         <>
           {/* Dark overlay */}
-          <div
-            className="fixed inset-0 bg-black bg-opacity-60 z-40"
-            onClick={closeModal}
-          />
+
 
           {/* Modal container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" >
+            <div
+              className="fixed inset-0 bg-black bg-opacity-60 z-40" onClick={closeModal}
+            />
+            
             <div
               className="
                 bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto
-                border-2 border-primary
+                border-2 border-primary z-50
               "
             >
               {/* Header with title + close button */}
