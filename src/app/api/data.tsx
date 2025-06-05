@@ -9,22 +9,22 @@ export const FeaturesData: {
     //   subheading: "Sed ut perspiciatis unde omnis iste natus error",
     // },
     {
-      imgSrc: '/images/features/nails-1.png',
+      imgSrc: '/images/Features/nails-1.png',
       heading: "Vinylux Nails",
       subheading: "Long-lasting polish with a glossy finish",
     },
     {
-      imgSrc: '/images/features/shellacs-1.png',
+      imgSrc: '/images/Features/shellacs-1.png',
       heading: "Shellac Nails & Pedicure",
       subheading: "Chip-free shine for hands and feet",
     },
     {
-      imgSrc: '/images/features/waxing-1.jpg',
+      imgSrc: '/images/Features/waxing-1.jpg',
       heading: "Waxing & Threading",
       subheading: "Smooth skin with expert shaping",
     },
     {
-      imgSrc: '/images/features/eyes.png',
+      imgSrc: '/images/Features/eyes.png',
       heading: "Eyebrows & Eyelashes",
       subheading: "Enhance your natural beauty",
     },
