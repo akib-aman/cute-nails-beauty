@@ -16,10 +16,7 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  // Use the pooled URL for Prisma Client at runtime in production
-  url       = env("POSTGRES_PRISMA_URL")
-  // Use the non-pooling URL for direct connections (e.g., for `prisma migrate`)
-  directUrl = env("POSTES_URL_NON_POOLING") // <-- Fix this typo: POSTGRES_URL_NON_POOLING
+  url       = env("DATABASE_URL")
 }
 
 // ─────────────────────────────────────────────────────────────────
