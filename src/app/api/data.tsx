@@ -25,7 +25,7 @@ export const FeaturesData: {
     },
     {
       imgSrc: '/images/features/eyes.png',
-      heading: "Eyebrows & Lashes",
+      heading: "Eyebrows & Eyelashes",
       subheading: "Enhance your natural beauty",
     },
 
