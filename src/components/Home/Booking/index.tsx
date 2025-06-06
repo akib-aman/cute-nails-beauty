@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react"; // Added useMemo
+import React, { useEffect, useState, useMemo, useRef } from "react"; // Added useMemo
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { isSunday, setHours, setMinutes, isSameDay, isAfter, isBefore, addMinutes } from "date-fns"; // Added addMinutes
@@ -51,6 +51,7 @@ const Booking = () => {
   const [bookedSlots, setBookedSlots] = useState<{ start: Date; end: Date }[]>([]);
   const [recaptchaPassed, setRecaptchaPassed] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
   // Fetch existing bookings on mount
   useEffect(() => {
@@ -139,10 +140,19 @@ const Booking = () => {
       }
     }
     setStep((s) => Math.min(s + 1, 3));
+    if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
-  const prev = () => setStep((s) => Math.max(s - 1, 0));
+  const prev = () => {
+    setStep((s) => Math.max(s - 1, 0));
 
+    if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+  };
   const handleSubmit = async () => {
     const res = await fetch("/api/appointments", {
       method: "POST",
