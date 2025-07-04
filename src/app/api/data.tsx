@@ -10,12 +10,12 @@ export const FeaturesData: {
     // },
     {
       imgSrc: '/images/Features/nails-1.png',
-      heading: "Vinylux Nails",
+      heading: "Vinylux Nail Treatments",
       subheading: "Long-lasting polish with a glossy finish",
     },
     {
       imgSrc: '/images/Features/shellacs-1.png',
-      heading: "Shellac Nails & Pedicure",
+      heading: "Shellac Nail Treatments",
       subheading: "Chip-free shine for hands and feet",
     },
     {
@@ -52,7 +52,7 @@ export interface TreatmentSection {
 
 export const TreatmentSections: TreatmentSection[] = [
   {
-    title: 'Vinylux Nails',
+    title: 'Vinylux Nail Treatments',
     treatments: [
       {
         name: 'Vinylux (normal nail polish) manicure',
@@ -111,7 +111,7 @@ export const TreatmentSections: TreatmentSection[] = [
   },
 
   {
-    title: 'Shellac Nails & Pedicure',
+    title: 'Shellac Nail Treatments',
     treatments: [
       {
         name: 'Shellac Manicure',

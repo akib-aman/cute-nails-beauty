@@ -299,14 +299,14 @@ export async function POST(req: Request) {
     }
 
     // 5) Create booking in DB
-    await prisma.booking.create({
+    const booking = await prisma.booking.create({
       data: {
         name,
         email,
         phonenumber,
         start: startDate,
         end: endDate,
-        treatments: treatments, // Prisma auto‐serializes array → JSON
+        treatments,
         total,
       },
     });
@@ -333,7 +333,7 @@ export async function POST(req: Request) {
       ),
     ]);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, booking }); 
   } catch (err) {
     console.error('[POST /api/appointments] Error:', err);
     return NextResponse.json(
@@ -346,28 +346,42 @@ export async function POST(req: Request) {
 // ─────────────────────────────────────────────────────────────────
 // GET handler: return all upcoming bookings (start/end only)
 // ─────────────────────────────────────────────────────────────────
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    // 1) Clean up old bookings whose end < now
-    await prisma.booking.deleteMany({
-      where: { end: { lt: new Date() } },
-    });
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
-    // 2) Fetch all future bookings
+    /* -------------------- 1) single booking path -------------------- */
+    if (id) {
+      const booking = await prisma.booking.findUnique({ where: { id } });
+
+      if (!booking) {
+        return NextResponse.json(
+          { message: "Booking not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(booking);   // ✅ send it back
+    }
+
+    /* -------------------- 2) existing “all bookings” logic ---------- */
+    // (your current cleanup + findMany code)
+    await prisma.booking.deleteMany({ where: { end: { lt: new Date() } } });
+
     const rows = await prisma.booking.findMany({
       select: { start: true, end: true },
-      orderBy: { start: 'asc' },
+      orderBy: { start: "asc" },
     });
 
-    // Convert Date → ISO string
     const result = rows.map((b) => ({
       start: b.start.toISOString(),
-      end: b.end.toISOString(),
+      end:   b.end.toISOString(),
     }));
 
     return NextResponse.json(result);
   } catch (err) {
-    console.error('[GET /api/appointments] Error:', err);
+    console.error("[GET /api/appointments] Error:", err);
     return NextResponse.json([], { status: 500 });
   }
 }

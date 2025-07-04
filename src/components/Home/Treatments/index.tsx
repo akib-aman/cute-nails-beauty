@@ -82,7 +82,7 @@ const Treatments: React.FC = () => {
                     after:right-0 after:translate-x-full hover:after:translate-x-0
                   "
                 >
-                  Learn More
+                  View Prices
                   <Icon
                     icon="tabler:chevron-right"
                     width="24"

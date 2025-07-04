@@ -10,6 +10,7 @@ import {
   ChildTreatment,
 } from "@/app/api/data";
 import { load } from 'recaptcha-v3';
+import { useRouter } from "next/navigation";   // ← correct import
 
 
 // Helper: parse a treatment name → duration in minutes
@@ -52,22 +53,79 @@ const Booking = () => {
   const [recaptchaPassed, setRecaptchaPassed] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+  const startISO = date?.toISOString();
+  const router = useRouter(); 
 
   // Fetch existing bookings on mount
   useEffect(() => {
-    (async () => {
-      const res = await fetch("/api/appointments");
-      if (res.ok) {
-        const data: { start: string; end: string }[] = await res.json();
-        setBookedSlots(
-          data.map((b) => ({
-            start: new Date(b.start),
-            end: new Date(b.end),
-          }))
-        );
-      }
-    })();
-  }, []);
+  (async () => {
+    const res = await fetch("/api/appointments");
+    if (res.ok) {
+      const data: { start: string; end: string }[] = await res.json();
+      setBookedSlots(
+        data.map((b) => ({
+          start: new Date(b.start),
+          end: new Date(b.end),
+        }))
+      );
+    }
+  })();
+}, []); // ✅ missing dependency array was added here
+
+// The following must go inside an `async` function or handler, like `handlePayment`
+
+  const handlePayment = async () => {
+    if (!recaptchaPassed || !agreedToTerms) return;
+
+    // Step 1: create the booking in the DB
+    const bookingRes = await fetch('/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        phonenumber,
+        date: startISO, // make sure your API accepts this key as DateTime
+        treatments: selectedTreatments,
+        total: totalPrice,
+      }),
+    });
+
+    if (!bookingRes.ok) {
+      const errText = await bookingRes.text();      // body may contain the reason
+      alert('Booking failed: ' + errText);
+      console.error('Booking error:', errText);
+      return;                                       // ⛔ stop here
+    }
+
+    const { booking } = await bookingRes.json(); // { id: '...' }
+
+    // Step 2: create the Stripe Checkout session using that booking ID
+    const sessionRes = await fetch('/api/checkout_sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        treatments: selectedTreatments,
+        total: totalPrice,
+        customerEmail: email,
+        bookingId: booking.id, // 👈 pass it along
+      }),
+    });
+
+    if (!sessionRes.ok) {
+      const errText = await sessionRes.text();
+      alert('Payment initialisation failed: ' + errText);
+      console.error('Stripe error:', errText);
+      return;                                       // ⛔ stop here
+    }
+
+    const sessionData = await sessionRes.json();
+    if (sessionData.url) {
+      window.location.href = sessionData.url;
+    } else {
+      alert("Payment failed: " + sessionData.error);
+    }
+  };
 
   const toggleTreatment = (name: string, price: number, checked: boolean) => {
     if (checked) {
@@ -153,19 +211,39 @@ const Booking = () => {
     }
 
   };
+  
   const handleSubmit = async () => {
-    const res = await fetch("/api/appointments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, phonenumber, date, treatments: selectedTreatments, total: totalPrice }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Booking confirmed! Please check your emails for a receipt.");
-      location.reload();
-    } else {
-      alert(data.message);
+    if (!recaptchaPassed || !agreedToTerms) return;
+
+    const startISO = date?.toISOString();
+    if (!startISO) {
+      alert("Please select a date & time first.");
+      return;
     }
+
+    const res = await fetch('/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        phonenumber,
+        date: startISO, // make sure your API accepts this key as DateTime
+        treatments: selectedTreatments,
+        total: totalPrice,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();      // body may contain the reason
+      alert('Booking failed: ' + errText);
+      console.error('Booking error:', errText);
+      return;                                       // ⛔ stop here
+    }
+
+    const data: { success: boolean; booking: { id: string } } = await res.json();
+
+    router.push(`/success?booking_id=${data.booking.id}`);
   };
 
 
@@ -405,13 +483,25 @@ const Booking = () => {
               <button
                 onClick={handleSubmit}
                 disabled={!recaptchaPassed || !agreedToTerms}
+                className={`bg-primary text-white font-semibold py-2 px-6 rounded-lg mt-8 transition ${
+                  recaptchaPassed && agreedToTerms
+                    ? "hover:bg-pink-600 cursor-pointer"
+                    : "opacity-50 cursor-not-allowed"
+                }`}
+              >
+                Pay in store
+              </button>
+              <h2 className="text-center">Or</h2>
+              <button
+                onClick={handlePayment}
+                disabled={!recaptchaPassed || !agreedToTerms}
                 className={`bg-primary text-white font-semibold py-2 px-6 rounded-lg mt-4 transition ${
                   recaptchaPassed && agreedToTerms
                     ? "hover:bg-pink-600 cursor-pointer"
                     : "opacity-50 cursor-not-allowed"
                 }`}
               >
-                Book!
+                Pay now
               </button>
             </div>
           )}

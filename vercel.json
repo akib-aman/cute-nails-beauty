@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cleanup_old_bookings",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
