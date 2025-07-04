@@ -1,5 +1,19 @@
+export const dynamic = 'force-dynamic';   // request‑time render (avoids SSG)
+
+import { Suspense } from 'react';
+
+/* ------------------------------------------------------------------ */
+/*  1)  SERVER component: the real page exported by Next.js            */
+/* ------------------------------------------------------------------ */
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<p className="text-center mt-24">Loading…</p>}>
+      <SuccessClient />
+    </Suspense>
+  );
+}
+
 'use client';
-export const dynamic = 'force-dynamic';
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from 'react';
@@ -12,7 +26,7 @@ type Appointment = {
   total: number;
 };
 
-export default function Success() {
+function SuccessClient() {
   const params = useSearchParams();
   const sessionId  = params.get('session_id');
   const bookingId  = params.get('booking_id');
