@@ -54,7 +54,10 @@ const Booking = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const startISO = date?.toISOString();
-  const router = useRouter(); 
+  const router = useRouter();
+  const [submitting, setSubmitting]   = useState(false); // Pay in store
+  const [payingNow,  setPayingNow]    = useState(false); // Pay now
+
 
   // Fetch existing bookings on mount
   useEffect(() => {
@@ -76,55 +79,65 @@ const Booking = () => {
 
   const handlePayment = async () => {
     if (!recaptchaPassed || !agreedToTerms) return;
+    setPayingNow(true);
 
-    // Step 1: create the booking in the DB
-    const bookingRes = await fetch('/api/appointments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        email,
-        phonenumber,
-        date: startISO, // make sure your API accepts this key as DateTime
-        treatments: selectedTreatments,
-        total: totalPrice,
-      }),
-    });
+    try {
+      // Step 1: create the booking in the DB
+      const bookingRes = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          phonenumber,
+          date: startISO, // make sure your API accepts this key as DateTime
+          treatments: selectedTreatments,
+          total: totalPrice,
+        }),
+      });
 
-    if (!bookingRes.ok) {
-      const errText = await bookingRes.text();      // body may contain the reason
-      alert('Booking failed: ' + errText);
-      console.error('Booking error:', errText);
-      return;                                       // ⛔ stop here
+      if (!bookingRes.ok) {
+        const errText = await bookingRes.text();      // body may contain the reason
+        alert('Booking failed: ' + errText);
+        console.error('Booking error:', errText);
+        return;                                       // ⛔ stop here
+      }
+
+      const { booking } = await bookingRes.json(); // { id: '...' }
+
+      // Step 2: create the Stripe Checkout session using that booking ID
+      const sessionRes = await fetch('/api/checkout_sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          treatments: selectedTreatments,
+          total: totalPrice,
+          customerEmail: email,
+          bookingId: booking.id, // 👈 pass it along
+        }),
+      });
+
+      if (!sessionRes.ok) {
+        const errText = await sessionRes.text();
+        alert('Payment initialisation failed: ' + errText);
+        console.error('Stripe error:', errText);
+        return;                                       // ⛔ stop here
+      }
+
+      const sessionData = await sessionRes.json();
+      if (sessionData.url) {
+        window.location.href = sessionData.url;
+      } else {
+        alert("Payment failed: " + sessionData.error);
+      }
+
+    } catch (err: any) {
+      alert(err.message ?? "Payment Failed");
+      console.error(err);
+    } finally {
+      setPayingNow(false);
     }
-
-    const { booking } = await bookingRes.json(); // { id: '...' }
-
-    // Step 2: create the Stripe Checkout session using that booking ID
-    const sessionRes = await fetch('/api/checkout_sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        treatments: selectedTreatments,
-        total: totalPrice,
-        customerEmail: email,
-        bookingId: booking.id, // 👈 pass it along
-      }),
-    });
-
-    if (!sessionRes.ok) {
-      const errText = await sessionRes.text();
-      alert('Payment initialisation failed: ' + errText);
-      console.error('Stripe error:', errText);
-      return;                                       // ⛔ stop here
-    }
-
-    const sessionData = await sessionRes.json();
-    if (sessionData.url) {
-      window.location.href = sessionData.url;
-    } else {
-      alert("Payment failed: " + sessionData.error);
-    }
+    
   };
 
   const toggleTreatment = (name: string, price: number, checked: boolean) => {
@@ -211,39 +224,40 @@ const Booking = () => {
     }
 
   };
+
+  const InlineSpinner = () => (
+    <div className="h-6 w-6 animate-spin rounded-full border-2 border-solid
+                    border-white border-t-transparent"></div>
+  );
   
   const handleSubmit = async () => {
     if (!recaptchaPassed || !agreedToTerms) return;
+    setSubmitting(true);              /* show spinner */
+    try {
+      const startISO = date?.toISOString();
+      if (!startISO) { alert("Pick a time first"); return; }
 
-    const startISO = date?.toISOString();
-    if (!startISO) {
-      alert("Please select a date & time first.");
-      return;
+      const res = await fetch("/api/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name, email, phonenumber,
+          date: startISO,
+          treatments: selectedTreatments,
+          total: totalPrice,
+        }),
+      });
+
+      if (!res.ok) { throw new Error(await res.text()); }
+
+      const { booking } = await res.json();
+      router.push(`/success?booking_id=${booking.id}`);
+    } catch (err: any) {
+      alert("Booking failed: " + err.message);
+      console.error(err);
+    } finally {
+      setSubmitting(false);           /* hide spinner */
     }
-
-    const res = await fetch('/api/appointments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        email,
-        phonenumber,
-        date: startISO, // make sure your API accepts this key as DateTime
-        treatments: selectedTreatments,
-        total: totalPrice,
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();      // body may contain the reason
-      alert('Booking failed: ' + errText);
-      console.error('Booking error:', errText);
-      return;                                       // ⛔ stop here
-    }
-
-    const data: { success: boolean; booking: { id: string } } = await res.json();
-
-    router.push(`/success?booking_id=${data.booking.id}`);
   };
 
 
@@ -291,10 +305,10 @@ const Booking = () => {
 
           {step === 1 && (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-primary">Select Treatments</h2>
+              <h2 className="text-3xl font-bold text-primary">Select Treatments</h2>
               {TreatmentSections.map((section: TreatmentSection) => (
-                <div key={section.title} className="mb-4">
-                  <h4 className="font-medium">{section.title}</h4>
+                <div key={section.title} className="py-4">
+                  <h4 className="text-xl text-primary font-semibold">{section.title}</h4>
                   <div className="pl-4">
                     {section.treatments.map((treat: Treatment) => {
                       if (treat.children) {
@@ -482,26 +496,26 @@ const Booking = () => {
               {/* Book button (disabled until reCAPTCHA passes & terms checked) */}
               <button
                 onClick={handleSubmit}
-                disabled={!recaptchaPassed || !agreedToTerms}
+                disabled={submitting || !recaptchaPassed || !agreedToTerms}
                 className={`bg-primary text-white font-semibold py-2 px-6 rounded-lg mt-8 transition ${
-                  recaptchaPassed && agreedToTerms
+                  recaptchaPassed && agreedToTerms && !submitting
                     ? "hover:bg-pink-600 cursor-pointer"
                     : "opacity-50 cursor-not-allowed"
                 }`}
               >
-                Pay in store
+                {submitting ? <InlineSpinner /> : "Pay in store"}
               </button>
               <h2 className="text-center">Or</h2>
               <button
                 onClick={handlePayment}
-                disabled={!recaptchaPassed || !agreedToTerms}
+                disabled={payingNow || !recaptchaPassed || !agreedToTerms}
                 className={`bg-primary text-white font-semibold py-2 px-6 rounded-lg mt-4 transition ${
-                  recaptchaPassed && agreedToTerms
+                  recaptchaPassed && agreedToTerms && !payingNow
                     ? "hover:bg-pink-600 cursor-pointer"
                     : "opacity-50 cursor-not-allowed"
                 }`}
               >
-                Pay now
+                {payingNow ? <InlineSpinner /> : "Pay now"}
               </button>
             </div>
           )}
