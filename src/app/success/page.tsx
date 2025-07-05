@@ -1,3 +1,5 @@
+'use client';
+
 export const dynamic = 'force-dynamic';   // request‑time render (avoids SSG)
 
 import { Suspense } from 'react';
@@ -13,7 +15,7 @@ export default function SuccessPage() {
   );
 }
 
-'use client';
+
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from 'react';
