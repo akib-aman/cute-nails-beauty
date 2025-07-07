@@ -22,7 +22,8 @@ export const insertEventToCalendar = async ({
   });
 
   // 2) use the real calendarId, not "primary" for service accounts
-  const calendarId = 'your‑calendar‑id@group.calendar.google.com';
+  const calendarId = process.env.GCAL_CALENDAR_ID!;
+
 
   // 3) authorise and insert
   await auth.authorize();
