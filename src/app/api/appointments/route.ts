@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server';
 import { parseISO, addMinutes, isBefore } from 'date-fns';
 import { PrismaClient } from '@prisma/client';
+import { insertEventToCalendar } from "@/lib/google-calendar"
 import nodemailer from 'nodemailer';
 
 const prisma = new PrismaClient();
@@ -308,10 +309,19 @@ export async function POST(req: Request) {
         end: endDate,
         treatments,
         total,
+        status: 'PENDING',
       },
     });
 
-    // 6) Send confirmation emails
+    // 6) Calender
+    await insertEventToCalendar({
+      summary: `Booking for ${name}`,
+      description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: ${total}\nPhone: ${phonenumber}`,
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString(),
+    });
+
+    // 7) Send confirmation emails
     await Promise.all([
       sendEmail(
         email,
@@ -368,6 +378,13 @@ export async function GET(req: Request) {
     /* -------------------- 2) existing “all bookings” logic ---------- */
     // (your current cleanup + findMany code)
     await prisma.booking.deleteMany({ where: { end: { lt: new Date() } } });
+
+    await prisma.booking.deleteMany({
+      where: {
+        status: 'PENDING',
+        createdAt: { lt: new Date(Date.now() - 30 * 60 * 1_000) },
+      },
+    });
 
     const rows = await prisma.booking.findMany({
       select: { start: true, end: true },

@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState, useMemo, useRef } from "react"; // Added useMemo
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { isSunday, setHours, setMinutes, isSameDay, isAfter, isBefore, addMinutes } from "date-fns"; // Added addMinutes
+import { isSunday, setHours, setMinutes, isSameDay, isAfter, isBefore, addMinutes } from "date-fns";
 import {
   TreatmentSections,
   TreatmentSection,
@@ -10,7 +10,7 @@ import {
   ChildTreatment,
 } from "@/app/api/data";
 import { load } from 'recaptcha-v3';
-import { useRouter } from "next/navigation";   // ← correct import
+import { useRouter } from "next/navigation"; 
 
 
 // Helper: parse a treatment name → duration in minutes
@@ -73,7 +73,7 @@ const Booking = () => {
       );
     }
   })();
-}, []); // ✅ missing dependency array was added here
+}, []);
 
 // The following must go inside an `async` function or handler, like `handlePayment`
 
@@ -226,13 +226,12 @@ const Booking = () => {
   };
 
   const InlineSpinner = () => (
-    <div className="h-6 w-6 animate-spin rounded-full border-2 border-solid
-                    border-white border-t-transparent"></div>
+    <div className="h-6 w-6 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></div>
   );
   
   const handleSubmit = async () => {
     if (!recaptchaPassed || !agreedToTerms) return;
-    setSubmitting(true);              /* show spinner */
+    setSubmitting(true);
     try {
       const startISO = date?.toISOString();
       if (!startISO) { alert("Pick a time first"); return; }
@@ -256,10 +255,9 @@ const Booking = () => {
       alert("Booking failed: " + err.message);
       console.error(err);
     } finally {
-      setSubmitting(false);           /* hide spinner */
+      setSubmitting(false);
     }
   };
-
 
   return (
     <section className="bg-gray-50" id="bookings-section">

@@ -36,7 +36,11 @@ export async function POST(req: Request) {
       }
 
       // Ensure price is parsed correctly, handling potential non-numeric input safely
-      const price = typeof t.price === 'string' ? parseFloat(t.price.replace('£', '')) : 0;
+      const price = typeof t.price === 'string'
+          ? parseFloat(t.price.replace(/[^\d.]/g, '')) // remove £ or other chars
+          : typeof t.price === 'number'
+          ? t.price
+          : 0;
 
       return {
         price_data: {
@@ -54,6 +58,7 @@ export async function POST(req: Request) {
       mode: 'payment',
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
+      customer_email: customerEmail,
       metadata: { email: customerEmail, booking_id: bookingId }
     });
 

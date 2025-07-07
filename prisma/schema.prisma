@@ -31,7 +31,14 @@ model Booking {
   end         DateTime
   treatments  Json
   total       Float
+  status      BookingStatus @default(PENDING)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  PAID
+  CANCELED
 }
