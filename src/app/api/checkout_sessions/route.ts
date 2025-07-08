@@ -16,11 +16,6 @@ export async function POST(req: Request) {
     const headersList = req.headers;
     const origin = headersList.get('origin') ?? '';
 
-    console.log('Extracted treatments:', treatments);
-    console.log('Extracted total:', total);
-    console.log('Extracted customerEmail (from body):', customerEmail);
-    console.log('Extracted origin:', origin);
-
     // Use the explicit customerEmail, providing a fallback if needed
     const emailToUse = customerEmail || ''; 
 
@@ -80,26 +75,17 @@ export async function GET(req: Request) {
   const sessionId = searchParams.get('session_id');
 
   if (!sessionId) {
-    // Return a more informative error for missing session ID
     return NextResponse.json({ message: 'Error: Missing session_id parameter in URL.' }, { status: 400 });
   }
 
   try {
-    // Retrieve the Stripe checkout session using the provided ID
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    // Safely access the email from the session metadata
     const email = session.metadata?.email;
 
-    // Log the email retrieved from metadata for debugging
-    console.log('Email retrieved from Stripe session metadata:', email);
-
     if (!email) {
-      // Return a specific message if email is not found in metadata
       return NextResponse.json({ message: 'Error: Email not found in Stripe session metadata. It might have been empty during creation.' }, { status: 400 });
     }
 
-    // Get the most recent appointment by email from your database
     const appointment = await prisma.booking.findFirst({
       where: { email },
       orderBy: { createdAt: 'desc' }, // Order by creation date to get the most recent

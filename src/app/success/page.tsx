@@ -35,6 +35,21 @@ function SuccessClient() {
   const [appointment, setAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
+    (async () => {
+      if (!sessionId) return;
+      try {
+        await fetch('/api/stripe/confirm', {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify({ sessionId }),
+        });
+      } catch (err) {
+        console.error('Payment‑confirmation call failed:', err);
+      }
+    })();                                                    
+  }, [sessionId]);                                           
+
+  useEffect(() => {
     let url: string | null = null;
     if (bookingId)       url = `/api/appointments?id=${bookingId}`;
     else if (sessionId)  url = `/api/checkout_sessions?session_id=${sessionId}`;
@@ -44,7 +59,7 @@ function SuccessClient() {
       const res  = await fetch(url);
       if (!res.ok) { console.error(await res.text()); return; }
       const data = await res.json();
-      // treatments is stored as Prisma Json → parse it so we can map() later
+
       setAppointment({
         ...data,
         treatments: Array.isArray(data.treatments) ? data.treatments

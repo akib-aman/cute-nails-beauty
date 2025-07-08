@@ -315,8 +315,8 @@ export async function POST(req: Request) {
 
     // 6) Calender
     await insertEventToCalendar({
-      summary: `Booking for ${name}`,
-      description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: ${total}\nPhone: ${phonenumber}`,
+      summary: name,
+      description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: £${total}\nPhone: ${phonenumber}`,
       startTime: startDate.toISOString(),
       endTime: endDate.toISOString(),
     });
