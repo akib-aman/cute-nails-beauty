@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { addMonths } from 'date-fns';
+import { subHours } from 'date-fns';
 
 const prisma = new PrismaClient();
 
@@ -12,12 +12,12 @@ export async function GET(request: Request) {
 
   try {
     const now = new Date();
-    const oneMonthAgo = addMonths(now, -1);
+    const OneDayAgo = subHours(now, 24);
 
     const { count } = await prisma.booking.deleteMany({
       where: {
         end: {
-          lt: oneMonthAgo,
+          lt: OneDayAgo,
         },
       },
     });
