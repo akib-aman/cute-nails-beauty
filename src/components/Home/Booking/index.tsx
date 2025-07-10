@@ -10,7 +10,15 @@ import {
   ChildTreatment,
 } from "@/app/api/data";
 import { load } from 'recaptcha-v3';
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
+import { Paintbrush, Sparkles, Scissors, Eye } from "lucide-react";
+
+const sectionIcons: Record<string, JSX.Element> = {
+  "Vinylux Nail Treatments": <Paintbrush className="text-pink-500 w-5 h-5" />,
+  "Shellac Nail Treatments": <Sparkles className="text-pink-500 w-5 h-5" />,
+  "Waxing & Threading": <Scissors className="text-pink-500 w-5 h-5" />,
+  "Eyebrows & Eyelashes": <Eye className="text-pink-500 w-5 h-5" />,
+};
 
 
 // Helper: parse a treatment name → duration in minutes
@@ -54,9 +62,10 @@ const Booking = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const startISO = date?.toISOString();
-  const router = useRouter();
-  const [submitting, setSubmitting]   = useState(false); // Pay in store
+  // const router = useRouter();
+  // const [submitting, setSubmitting]   = useState(false); // Pay in store
   const [payingNow,  setPayingNow]    = useState(false); // Pay now
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
 
   // Fetch existing bookings on mount
@@ -229,38 +238,38 @@ const Booking = () => {
     <div className="h-6 w-6 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></div>
   );
   
-  const handleSubmit = async () => {
-    if (!recaptchaPassed || !agreedToTerms) return;
-    setSubmitting(true);
-    try {
-      const startISO = date?.toISOString();
-      if (!startISO) { alert("Pick a time first"); return; }
+  // const handleSubmit = async () => {
+  //   if (!recaptchaPassed || !agreedToTerms) return;
+  //   setSubmitting(true);
+  //   try {
+  //     const startISO = date?.toISOString();
+  //     if (!startISO) { alert("Pick a time first"); return; }
 
-      const res = await fetch("/api/appointments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name, email, phonenumber,
-          date: startISO,
-          treatments: selectedTreatments,
-          total: totalPrice,
-        }),
-      });
+  //     const res = await fetch("/api/appointments", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         name, email, phonenumber,
+  //         date: startISO,
+  //         treatments: selectedTreatments,
+  //         total: totalPrice,
+  //       }),
+  //     });
 
-      if (!res.ok) { throw new Error(await res.text()); }
+  //     if (!res.ok) { throw new Error(await res.text()); }
 
-      const { booking } = await res.json();
-      router.push(`/success?booking_id=${booking.id}`);
-    } catch (err: any) {
-      alert("Booking failed: " + err.message);
-      console.error(err);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  //     const { booking } = await res.json();
+  //     router.push(`/success?booking_id=${booking.id}`);
+  //   } catch (err: any) {
+  //     alert("Booking failed: " + err.message);
+  //     console.error(err);
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
 
   return (
-    <section className="bg-gray-50" id="bookings-section">
+    <section ref={formRef} className="bg-gray-50" id="bookings-section">
       <div className="container mx-auto lg:max-w-screen-xl md:max-w-screen-md">
         <div className="text-center">
           <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase">
@@ -271,7 +280,7 @@ const Booking = () => {
           </h2>
         </div>
 
-        <div className="mx-auto mt-12 p-10 shadow rounded-xl text-black max-w-xl">
+        <div className="mx-auto mt-12 p-8 shadow rounded-xl text-black max-w-xl">
           {step === 0 && (
             <div className="space-y-4">
               <input
@@ -303,110 +312,104 @@ const Booking = () => {
 
           {step === 1 && (
             <div className="space-y-4">
-              <h2 className="text-3xl font-bold text-primary">Select Treatments</h2>
-              {TreatmentSections.map((section: TreatmentSection) => (
-                <div key={section.title} className="py-4">
-                  <h4 className="text-xl text-primary font-semibold">{section.title}</h4>
-                  <div className="pl-4">
-                    {section.treatments.map((treat: Treatment) => {
-                      if (treat.children) {
-                        return (
-                          <div key={treat.name} className="mb-2">
-                            <p className="font-semibold">{treat.name}:</p>
-                            <div className="pl-4">
-                              {treat.children.map((child: ChildTreatment, index: number) => {
-                                const priceNum = parseFloat(child.price.replace(/[^0-9.]/g, ""));
-                                const isChecked = selectedTreatments.some((t) => t.name === child.name);
+              <h2 className="text-3xl font-bold text-primary mb-4">Select Treatments</h2>
 
-                                const radioName = `group-${treat.name.replace(/\s+/g, '-')}`;
-                                const radioId = `${radioName}-${index}`;
+              {TreatmentSections.map((section) => (
+                <div key={section.title} className="border rounded-lg overflow-hidden shadow-sm">
+                  <button
+                    className="w-full flex items-center justify-between p-4 bg-white hover:bg-pink-50 transition"
+                    onClick={() => setOpenSection(openSection === section.title ? null : section.title)}
+                  >
+                    <div className="flex items-center gap-3 text-left">
+                      {sectionIcons[section.title]}
+                      <span className="font-semibold text-lg text-primary">{section.title}</span>
+                    </div>
+                    <span className="text-gray-500">{openSection === section.title ? "−" : "+"}</span>
+                  </button>
 
-                                return (
-                                  <label
-                                    key={child.name}
-                                    htmlFor={radioId}
-                                    className="flex items-center space-x-3 mb-1"
-                                  >
-                                    <input
-                                      type="radio"
-                                      id={radioId}
-                                      name={radioName}
-                                      checked={isChecked}
-                                      onClick={() => {
-                                        setSelectedTreatments((prev) => {
-                                          const isAlreadySelected = prev.some((t) => t.name === child.name);
+                  {openSection === section.title && (
+                    <div className="bg-gray-50 p-4 space-y-2">
+                      {section.treatments.map((treat) => {
+                        if (treat.children) {
+                          return (
+                            <div key={treat.name}>
+                              <p className="font-semibold">{treat.name}</p>
+                              <div className="pl-4">
+                                {treat.children.map((child, index) => {
+                                  const priceNum = parseFloat(child.price.replace(/[^0-9.]/g, ""));
+                                  const isChecked = selectedTreatments.some((t) => t.name === child.name);
+                                  const radioName = `group-${treat.name.replace(/\s+/g, '-')}`;
 
-                                          if (isAlreadySelected) {
-                                            // Deselect it
-                                            return prev.filter((t) => t.name !== child.name);
-                                          } else {
-                                            // Remove other children in group
+                                  return (
+                                    <label
+                                      key={child.name}
+                                      className="flex items-center space-x-3 mb-1"
+                                    >
+                                      <input
+                                        type="radio"
+                                        name={radioName}
+                                        checked={isChecked}
+                                        onClick={() => {
+                                          setSelectedTreatments((prev) => {
+                                            const isAlreadySelected = prev.some((t) => t.name === child.name);
                                             const withoutGroup = prev.filter(
-                                              (t) =>
-                                                !(
-                                                  treat.children?.some((c) => c.name === t.name)
-                                                )
+                                              (t) => !(treat.children?.some((c) => c.name === t.name))
                                             );
-                                            return [...withoutGroup, { name: child.name, price: priceNum, parent: treat.name }];
-                                          }
-                                        });
-                                      }}
-                                      className="form-radio h-4 w-4 text-pink-500 border-gray-300 focus:ring-pink-400"
-                                    />
-                                    <span className="flex-1 text-gray-800">{child.name}</span>
-                                    <span className="text-gray-600">{child.price}</span>
-                                  </label>
-                                );
-                              })}
+                                            return isAlreadySelected
+                                              ? withoutGroup
+                                              : [...withoutGroup, { name: child.name, price: priceNum, parent: treat.name }];
+                                          });
+                                        }}
+                                        className="form-radio h-4 w-4 text-pink-500 border-gray-300 focus:ring-pink-400"
+                                      />
+                                      <span className="flex-1 text-gray-800">{child.name}</span>
+                                      <span className="text-gray-600">{child.price}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      }
-                      if (treat.price) {
-                        const priceNum = parseFloat(
-                          treat.price.replace(/[^0-9.]/g, "")
-                        );
-                        const isChecked = selectedTreatments.some(
-                          (t) => t.name === treat.name
-                        );
-                        return (
-                          <label
-                            key={treat.name}
-                            className="flex items-center justify-between mb-2 space-x-3"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={(e) =>
-                                  toggleTreatment(
-                                    treat.name,
-                                    priceNum,
-                                    e.target.checked
-                                  )
-                                }
-                                className="
-                                  form-checkbox h-4 w-4 text-pink-500
-                                  border-gray-300 rounded focus:ring-pink-400
-                                "
-                              />
-                              <span className="text-gray-800">{treat.name}</span>
-                            </div>
-                            <span className="text-gray-600">{treat.price}</span>
-                          </label>
-                        );
-                      }
-                      return null;
-                    })}
-                  </div>
+                          );
+                        }
+
+                        if (treat.price) {
+                          const priceNum = parseFloat(treat.price.replace(/[^0-9.]/g, ""));
+                          const isChecked = selectedTreatments.some((t) => t.name === treat.name);
+
+                          return (
+                            <label
+                              key={treat.name}
+                              className="flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) =>
+                                    toggleTreatment(treat.name, priceNum, e.target.checked)
+                                  }
+                                  className="form-checkbox h-4 w-4 text-pink-500 border-gray-300 focus:ring-pink-400"
+                                />
+                                <span className="text-gray-800">{treat.name}</span>
+                              </div>
+                              <span className="text-gray-600">{treat.price}</span>
+                            </label>
+                          );
+                        }
+
+                        return null;
+                      })}
+                    </div>
+                  )}
                 </div>
               ))}
 
-              <div className="text-right font-semibold">
+              <div className="text-right font-semibold pt-4">
                 Total: £{totalPrice.toFixed(2)}
               </div>
             </div>
           )}
+
 
           {step === 2 && (
             <div>
@@ -435,7 +438,7 @@ const Booking = () => {
           )}
 
           {step === 3 && (
-            <div className="space-y-2 text-center">
+            <div className="space-y-3 text-center">
               <p>
                 <strong>Name:</strong> {name}
               </p>
@@ -492,7 +495,7 @@ const Booking = () => {
               </div>
 
               {/* Book button (disabled until reCAPTCHA passes & terms checked) */}
-              <button
+              {/* <button
                 onClick={handleSubmit}
                 disabled={submitting || !recaptchaPassed || !agreedToTerms}
                 className={`bg-primary text-white font-semibold py-2 px-6 rounded-lg mt-8 transition ${
@@ -503,7 +506,7 @@ const Booking = () => {
               >
                 {submitting ? <InlineSpinner /> : "Pay in store"}
               </button>
-              <h2 className="text-center">Or</h2>
+              <h2 className="text-center">Or</h2> */}
               <button
                 onClick={handlePayment}
                 disabled={payingNow || !recaptchaPassed || !agreedToTerms}

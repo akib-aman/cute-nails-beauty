@@ -55,19 +55,19 @@ export const TreatmentSections: TreatmentSection[] = [
     title: 'Vinylux Nail Treatments',
     treatments: [
       {
-        name: 'Vinylux (normal nail polish) manicure',
+        name: 'Normal Vinylux manicure',
         time: '30 mins',
         price: '£18',
-      },
-      {
-        name: 'Vinylux French Manicure',
-        time: '45 mins',
-        price: '£20',
       },
       {
         name: 'Manicure with Top Coat Only',
         time: ' 20 mins',
         price: '£13',
+      },
+      {
+        name: 'Vinylux French Manicure',
+        time: '45 mins',
+        price: '£20',
       },
       {
         name: 'Acrylic nails extension',
@@ -80,14 +80,14 @@ export const TreatmentSections: TreatmentSection[] = [
         price: '£15',
       },
       {
-        name: 'Acrylic',
-        time: '1 hr',
-        price: '£30',
-      },
-      {
         name: 'French File & Polish',
         time: '30 mins',
         price: '£25',
+      },
+      {
+        name: 'Acrylic',
+        time: '1 hr',
+        price: '£30',
       },
       {
         name: 'Cut Down & File',
@@ -119,14 +119,19 @@ export const TreatmentSections: TreatmentSection[] = [
         price: '£22'
       },
       {
+        name: 'Shellac French Manicure',
+        time: '30 mins',
+        price: '£25',
+      },
+      {
         name: 'Shellac toes',
         time: '30 mins',
         price: '£30',
       },
       {
-        name: 'Shellac French Manicure',
-        time: '30 mins',
-        price: '£25',
+        name: 'Shellac Single Nail Repair',
+        time: '10 mins',
+        price: '£4',
       },
       {
         name: 'Shellac Removal',
@@ -134,11 +139,6 @@ export const TreatmentSections: TreatmentSection[] = [
           { name: '15 mins', price: '£10' },
           { name: 'Shellac removal & shape - 20 mins', price: '£10' },
         ],
-      },
-      {
-        name: 'Shellac Single Nail Repair',
-        time: '10 mins',
-        price: '£4',
       },
       {
         name: 'Shellac (hand & toes)',
@@ -221,14 +221,9 @@ export const TreatmentSections: TreatmentSection[] = [
         ],
       },
       {
-        name: 'Eyebrow Shape & Eyelash Tint',
-        time: '30 mins',
-        price: '£22',
-      },
-      {
-        name: 'Eyebrow & Eyelash Tint with Eyebrow Shape (package)',
-        time: '30 mins',
-        price: '£28',
+        name: 'Eyebrow Threading',
+        time: '10 mins',
+        price: '£9',
       },
       {
         name: 'Eyebrow Waxing',
@@ -236,9 +231,14 @@ export const TreatmentSections: TreatmentSection[] = [
         price: '£10',
       },
       {
-        name: 'Eyebrow Threading',
-        time: '10 mins',
-        price: '£9',
+        name: 'Full Set Party Lash Extensions',
+        time: '20 mins',
+        price: '£22',
+      },
+      {
+        name: 'Eyebrow Shape & Eyelash Tint',
+        time: '30 mins',
+        price: '£22',
       },
       {
         name: 'Eyebrow Shape and Henna',
@@ -246,9 +246,9 @@ export const TreatmentSections: TreatmentSection[] = [
         price: '£23',
       },
       {
-        name: 'Lash Extensions - (Party Lashes) full set',
-        time: '20 mins',
-        price: '£22',
+        name: 'Eyebrow, Eyelash Tint & Eyebrow Shape',
+        time: '30 mins',
+        price: '£28',
       },
     ],
   }
