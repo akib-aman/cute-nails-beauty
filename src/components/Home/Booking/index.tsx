@@ -5,12 +5,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { isSunday, setHours, setMinutes, isSameDay, isAfter, isBefore, addMinutes } from "date-fns";
 import {
   TreatmentSections,
-  TreatmentSection,
-  Treatment,
-  ChildTreatment,
 } from "@/app/api/data";
 import { load } from 'recaptcha-v3';
-import { useRouter } from "next/navigation";
 import { Paintbrush, Sparkles, Scissors, Eye } from "lucide-react";
 
 const sectionIcons: Record<string, JSX.Element> = {
@@ -19,6 +15,7 @@ const sectionIcons: Record<string, JSX.Element> = {
   "Waxing & Threading": <Scissors className="text-pink-500 w-5 h-5" />,
   "Eyebrows & Eyelashes": <Eye className="text-pink-500 w-5 h-5" />,
 };
+import { addDays } from "date-fns";
 
 
 // Helper: parse a treatment name → duration in minutes
@@ -425,6 +422,7 @@ const Booking = () => {
                   timeIntervals={15}
                   dateFormat="MMMM d, yyyy h:mm aa" // Corrected dateFormat
                   minDate={new Date()}
+                  maxDate={addDays(new Date(), 30)}
                   filterDate={(d) => !isSunday(d)}
                   filterTime={filterAvailableTimes}
                   placeholderText="Pick a Date & Time!"

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { subHours } from 'date-fns';
+import { subMonths } from 'date-fns';
 
 const prisma = new PrismaClient();
 
@@ -12,12 +12,12 @@ export async function GET(request: Request) {
 
   try {
     const now = new Date();
-    const OneDayAgo = subHours(now, 24);
+    const OneMonthAgo = subMonths(now, 1);
 
     const { count } = await prisma.booking.deleteMany({
       where: {
         end: {
-          lt: OneDayAgo,
+          lt: OneMonthAgo,
         },
       },
     });
@@ -31,14 +31,12 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Cron Job Error: Failed to delete old bookings:', error);
 
-    // --- FIX STARTS HERE ---
     let errorMessage = 'An unknown error occurred.';
     if (error instanceof Error) {
       errorMessage = error.message;
     } else if (typeof error === 'string') {
       errorMessage = error;
     }
-    // --- FIX ENDS HERE ---
 
     return NextResponse.json(
       { success: false, message: 'Failed to delete old bookings', error: errorMessage },
