@@ -15,8 +15,6 @@ interface BookingPayload {
   date: string; // ISO from frontend
   treatments: { name: string; price: number; parent?: string }[];
   total: number;
-  stripeSessionId: string;
-  eventId: string;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -314,7 +312,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5) Create booking in DB
+    // 6) Insert into calendar and capture the event ID
+    const calendarResponse = await insertEventToCalendar({
+      summary: "[UNPAID] " + name,
+      description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: £${total}\nPhone: ${phonenumber}`,
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString(),
+    });
+
+    const eventId = calendarResponse?.data?.id ?? null;
+
+    // 7) Create booking in DB
     const booking = await prisma.booking.create({
       data: {
         name,
@@ -330,15 +338,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // 6) Calender
-    const eventId = await insertEventToCalendar({
-      summary: "[UNPAID] " + name,
-      description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: £${total}\nPhone: ${phonenumber}`,
-      startTime: startDate.toISOString(),
-      endTime: endDate.toISOString(),
-    });
-
-    // 7) Send confirmation emails
+    // 8) Send confirmation emails
     await Promise.all([
       sendEmail(
         email,

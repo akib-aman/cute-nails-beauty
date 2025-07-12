@@ -6,7 +6,7 @@ const TermsAndConditionsPage = () => (
       <li>All bookings require a valid name and email.</li>
       <li>Please arrive 5 minutes before your scheduled appointment.</li>
       <li>We reserve the right to refuse service if you are late by more than 10 minutes without notice.</li>
-      <li>Cancellations must be made at least 24 hours in advance.</li>
+      <li>Cancellations must be made at least 24 hours in advance. And you can only cancel via contact by telephone</li>
       <li>No shows may be charged a fee or restricted from future bookings.</li>
     </ul>
     <p className="mt-6">These terms help us serve all clients fairly and efficiently. Thank you for your understanding.</p>
