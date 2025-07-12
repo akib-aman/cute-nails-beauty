@@ -15,6 +15,8 @@ interface BookingPayload {
   date: string; // ISO from frontend
   treatments: { name: string; price: number; parent?: string }[];
   total: number;
+  stripeSessionId: string;
+  eventId: string;
 }
 
 // ─────────────────────────────────────────────────────────────────
