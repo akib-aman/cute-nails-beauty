@@ -215,7 +215,7 @@ const createManagerEmailBody = (
       </table>
 
       <p style="margin-top: 24px;">
-        <a href="https://cute-nails-beauty.vercel.app/cancelbooking?booking_id=${bookingid}"
+        <a href="https://cute-nails-beauty.vercel.app/cancel-booking?booking_id=${bookingid}"
           style="background-color: #dc2626; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px;">
           Cancel Appointment
         </a>
