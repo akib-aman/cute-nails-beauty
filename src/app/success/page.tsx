@@ -97,14 +97,18 @@ function SuccessClient() {
                       </ul>
 
                       <p className="mt-2 font-bold">Total paid: £{appointment.total.toFixed(2)}</p>
-                      {appointment && (
+                      <p className="mt-2 font-bold">
+                        If you need to cancel or request a refund, please call us directly on 
+                        <a href="tel:+447956044691" className="color: #cf5888; text-decoration: none;">+44 7956 044 691</a>.
+                      </p>
+                      {/* {appointment && (
                         <button
-                          onClick={() => router.push(`/cancel-booking?booking_id=${appointment.id}`)}
+                          onClick={() => router.push(`/cancelbooking?booking_id=${appointment.id}`)}
                           className="mt-6 bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md"
                         >
                           Cancel Appointment
                         </button>
-                      )}
+                      )} */}
 
                     </>
                   ) : (
