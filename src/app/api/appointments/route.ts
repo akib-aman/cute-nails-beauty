@@ -312,15 +312,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 6) Insert into calendar and capture the event ID
-    const eventId = await insertEventToCalendar({
-      summary: "[UNPAID] " + name,
-      description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: £${total}\nPhone: ${phonenumber}`,
-      startTime: startDate.toISOString(),
-      endTime: endDate.toISOString(),
-    });
-
-    // 7) Create booking in DB
+    // 6) Create booking in DB (first!)
     const booking = await prisma.booking.create({
       data: {
         name,
@@ -331,12 +323,26 @@ export async function POST(req: Request) {
         treatments,
         total,
         stripeSessionId: '',
-        eventId,
+        eventId: '', // temporarily blank — we'll update this next
         status: 'PENDING',
       },
     });
 
-    // 8) Send confirmation emails
+    // 7) Insert into calendar and capture the event ID
+    const eventId = await insertEventToCalendar({
+      summary: "[UNPAID] " + name,
+      description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: £${total}\nPhone: ${phonenumber}\nCancel: https://cute-nails-beauty.vercel.app/cancel-booking?booking_id=${booking.id}`,
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString(),
+    });
+
+    // 8) Update the booking with the eventId
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: { eventId },
+    });
+
+    // 9) Send confirmation emails
     await Promise.all([
       sendEmail(
         email,
