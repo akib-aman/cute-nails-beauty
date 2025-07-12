@@ -313,14 +313,12 @@ export async function POST(req: Request) {
     }
 
     // 6) Insert into calendar and capture the event ID
-    const calendarResponse = await insertEventToCalendar({
+    const eventId = await insertEventToCalendar({
       summary: "[UNPAID] " + name,
       description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: £${total}\nPhone: ${phonenumber}`,
       startTime: startDate.toISOString(),
       endTime: endDate.toISOString(),
     });
-
-    const eventId = calendarResponse?.data?.id ?? null;
 
     // 7) Create booking in DB
     const booking = await prisma.booking.create({
