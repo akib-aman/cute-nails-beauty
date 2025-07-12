@@ -16,6 +16,7 @@ const sectionIcons: Record<string, JSX.Element> = {
   "Eyebrows & Eyelashes": <Eye className="text-pink-500 w-5 h-5" />,
 };
 import { addDays } from "date-fns";
+import { useRouter } from "next/navigation";
 
 
 // Helper: parse a treatment name → duration in minutes
@@ -59,8 +60,8 @@ const Booking = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const startISO = date?.toISOString();
-  // const router = useRouter();
-  // const [submitting, setSubmitting]   = useState(false); // Pay in store
+  const router = useRouter();
+  const [submitting, setSubmitting]   = useState(false); // Pay in store
   const [payingNow,  setPayingNow]    = useState(false); // Pay now
   const [openSection, setOpenSection] = useState<string | null>(null);
 
@@ -235,35 +236,35 @@ const Booking = () => {
     <div className="h-6 w-6 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></div>
   );
   
-  // const handleSubmit = async () => {
-  //   if (!recaptchaPassed || !agreedToTerms) return;
-  //   setSubmitting(true);
-  //   try {
-  //     const startISO = date?.toISOString();
-  //     if (!startISO) { alert("Pick a time first"); return; }
+  const handleSubmit = async () => {
+    if (!recaptchaPassed || !agreedToTerms) return;
+    setSubmitting(true);
+    try {
+      const startISO = date?.toISOString();
+      if (!startISO) { alert("Pick a time first"); return; }
 
-  //     const res = await fetch("/api/appointments", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         name, email, phonenumber,
-  //         date: startISO,
-  //         treatments: selectedTreatments,
-  //         total: totalPrice,
-  //       }),
-  //     });
+      const res = await fetch("/api/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name, email, phonenumber,
+          date: startISO,
+          treatments: selectedTreatments,
+          total: totalPrice,
+        }),
+      });
 
-  //     if (!res.ok) { throw new Error(await res.text()); }
+      if (!res.ok) { throw new Error(await res.text()); }
 
-  //     const { booking } = await res.json();
-  //     router.push(`/success?booking_id=${booking.id}`);
-  //   } catch (err: any) {
-  //     alert("Booking failed: " + err.message);
-  //     console.error(err);
-  //   } finally {
-  //     setSubmitting(false);
-  //   }
-  // };
+      const { booking } = await res.json();
+      router.push(`/success?booking_id=${booking.id}`);
+    } catch (err: any) {
+      alert("Booking failed: " + err.message);
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <section ref={formRef} className="bg-gray-50" id="bookings-section">
@@ -320,9 +321,27 @@ const Booking = () => {
                     <div className="flex items-center gap-3 text-left">
                       {sectionIcons[section.title]}
                       <span className="font-semibold text-lg text-primary">{section.title}</span>
+
+                      {/* Count how many selected treatments are in this section */}
+                      {(() => {
+                        const selectedCount = selectedTreatments.filter((t) =>
+                          section.treatments.some((s) =>
+                            s.children
+                              ? s.children.some((c) => c.name === t.name)
+                              : s.name === t.name
+                          )
+                        ).length;
+
+                        return selectedCount > 0 ? (
+                          <span className="ml-2 bg-pink-100 text-pink-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+                            {selectedCount}
+                          </span>
+                        ) : null;
+                      })()}
                     </div>
                     <span className="text-gray-500">{openSection === section.title ? "−" : "+"}</span>
                   </button>
+
 
                   {openSection === section.title && (
                     <div className="bg-gray-50 p-4 space-y-2">
@@ -340,7 +359,9 @@ const Booking = () => {
                                   return (
                                     <label
                                       key={child.name}
-                                      className="flex items-center space-x-3 mb-1"
+                                      className={`flex items-center space-x-3 mb-1 p-2 rounded transition ${
+                                      isChecked ? 'bg-pink-100' : ''
+                                    }`}
                                     >
                                       <input
                                         type="radio"
@@ -376,7 +397,9 @@ const Booking = () => {
                           return (
                             <label
                               key={treat.name}
-                              className="flex items-center justify-between"
+                              className={`flex items-center justify-between p-2 rounded transition ${
+                                isChecked ? 'bg-pink-100' : ''
+                              }`}
                             >
                               <div className="flex items-center gap-3">
                                 <input
@@ -493,7 +516,7 @@ const Booking = () => {
               </div>
 
               {/* Book button (disabled until reCAPTCHA passes & terms checked) */}
-              {/* <button
+              <button
                 onClick={handleSubmit}
                 disabled={submitting || !recaptchaPassed || !agreedToTerms}
                 className={`bg-primary text-white font-semibold py-2 px-6 rounded-lg mt-8 transition ${
@@ -502,9 +525,9 @@ const Booking = () => {
                     : "opacity-50 cursor-not-allowed"
                 }`}
               >
-                {submitting ? <InlineSpinner /> : "Pay in store"}
+                {submitting ? <InlineSpinner /> : "Pay in store (cash)"}
               </button>
-              <h2 className="text-center">Or</h2> */}
+              <h2 className="text-center">Or</h2>
               <button
                 onClick={handlePayment}
                 disabled={payingNow || !recaptchaPassed || !agreedToTerms}

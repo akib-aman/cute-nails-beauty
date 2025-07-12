@@ -19,7 +19,8 @@ export default function SuccessPage() {
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+
 type Appointment = {
   id: string;
   email: string;
@@ -33,6 +34,7 @@ function SuccessClient() {
   const sessionId  = params.get('session_id');
   const bookingId  = params.get('booking_id');
   const [appointment, setAppointment] = useState<Appointment | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -95,12 +97,23 @@ function SuccessClient() {
                       </ul>
 
                       <p className="mt-2 font-bold">Total paid: £{appointment.total.toFixed(2)}</p>
+                      {appointment && (
+                        <button
+                          onClick={() => router.push(`/cancel-booking?booking_id=${appointment.id}`)}
+                          className="mt-6 bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md"
+                        >
+                          Cancel Appointment
+                        </button>
+                      )}
+
                     </>
                   ) : (
                     <p>Loading appointment details…</p>
                   )}
                 </div>
               </section>
+
+              
 
               {/* Flex container: Map and Info side by side */}
               <div className="flex flex-col lg:flex-row gap-16 items-start">

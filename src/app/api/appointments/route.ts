@@ -99,7 +99,8 @@ const createClientEmailBody = (
   start: Date,
   end: Date,
   treatments: { name: string; price: number; parent?: string }[],
-  total: number
+  total: number,
+  bookingid: string
 ) => {
   const eventStart = formatDateForICS(start);
   const eventEnd = formatDateForICS(end);
@@ -136,22 +137,26 @@ const createClientEmailBody = (
       <p>We can’t wait to see you!</p>
       <p style="margin-bottom: 0;">Warm wishes,</p>
       <p style="margin-top: 4px;">Cute Edinburgh</p>
+      <p style="margin-top: 32px; font-size: 14px; color: #666;">
+        If you need to cancel or request a refund, please call us directly on 
+        <a href="tel:+447956044691" style="color: #cf5888; text-decoration: none;">+44 7956 044 691</a>.
+      </p>
 
       <hr style="margin: 24px 0;" />
 
       <!-- Hidden VCALENDAR for auto-detection -->
       <div style="display: none; white-space: pre;">
-BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-UID:${start.getTime()}@cutesalon.com
-DTSTAMP:${eventStart}
-DTSTART:${eventStart}
-DTEND:${eventEnd}
-SUMMARY:Cute Salon Appointment
-DESCRIPTION:Your appointment at Cute Salon
-END:VEVENT
-END:VCALENDAR
+  BEGIN:VCALENDAR
+  VERSION:2.0
+  BEGIN:VEVENT
+  UID:${start.getTime()}@cutesalon.com
+  DTSTAMP:${eventStart}
+  DTSTART:${eventStart}
+  DTEND:${eventEnd}
+  SUMMARY:Cute Salon Appointment
+  DESCRIPTION:Your appointment at Cute Salon
+  END:VEVENT
+  END:VCALENDAR
       </div>
     </div>
   `;
@@ -167,7 +172,8 @@ const createManagerEmailBody = (
   start: Date,
   end: Date,
   treatments: { name: string; price: number; parent?: string }[],
-  total: number
+  total: number,
+  bookingid: string
 ) => {
   const eventStart = formatDateForICS(start);
   const eventEnd = formatDateForICS(end);
@@ -207,6 +213,13 @@ const createManagerEmailBody = (
           <td style="padding: 8px;"><strong>£${total.toFixed(2)}</strong></td>
         </tr>
       </table>
+
+      <p style="margin-top: 24px;">
+        <a href="https://cute-nails-beauty.vercel.app/cancel-booking?booking_id=${bookingid}"
+          style="background-color: #dc2626; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px;">
+          Cancel Appointment
+        </a>
+      </p>
 
       <hr style="margin: 24px 0;" />
 
@@ -309,13 +322,15 @@ export async function POST(req: Request) {
         end: endDate,
         treatments,
         total,
+        stripeSessionId: '',
+        eventId,
         status: 'PENDING',
       },
     });
 
     // 6) Calender
-    await insertEventToCalendar({
-      summary: name,
+    const eventId = await insertEventToCalendar({
+      summary: "[UNPAID] " + name,
       description: `Treatments: ${treatments.map(t => t.name).join(', ')}\nTotal: £${total}\nPhone: ${phonenumber}`,
       startTime: startDate.toISOString(),
       endTime: endDate.toISOString(),
@@ -326,7 +341,7 @@ export async function POST(req: Request) {
       sendEmail(
         email,
         'Your Appointment Confirmation',
-        createClientEmailBody(name, startDate, endDate, treatments, total)
+        createClientEmailBody(name, startDate, endDate, treatments, total, booking.id)
       ),
       sendEmail(
         process.env.MANAGER_EMAIL!,
@@ -338,7 +353,8 @@ export async function POST(req: Request) {
           startDate,
           endDate,
           treatments,
-          total
+          total,
+          booking.id
         )
       ),
     ]);

@@ -1,9 +1,9 @@
-// app/api/stripe/confirm/route.ts
 import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
+import { updateEventSummary } from "@/lib/google-calendar";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-05-28.basil", // Use a specific API version for consistency
+  apiVersion: "2025-05-28.basil",
 });
 
 const prisma = new PrismaClient();
@@ -19,12 +19,26 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ ok: false }), { status: 400 });
   }
 
-  // 3) Use metadata (or the sessionId you saved earlier) to find the booking
+  // 3) Find booking using metadata
   const bookingId = session.metadata?.booking_id;
-  await prisma.booking.update({
+  if (!bookingId) {
+    return new Response(JSON.stringify({ ok: false, error: "Missing booking_id in metadata" }), { status: 400 });
+  }
+
+  const booking = await prisma.booking.update({
     where: { id: bookingId },
-    data: { status: 'PAID' },
+    data: { status: 'PAID', stripeSessionId: session.id },
   });
+
+  // 4) Update calendar title if eventId is available
+  if (booking.eventId) {
+    try {
+      await updateEventSummary(booking.eventId, `[PREPAID] ${booking.name}`);
+    } catch (err) {
+      console.error("Failed to update calendar summary:", err);
+      // Optionally: notify admin or log elsewhere
+    }
+  }
 
   return new Response(JSON.stringify({ ok: true }));
 }
