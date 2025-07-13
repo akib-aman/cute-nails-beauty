@@ -47,21 +47,31 @@ export const insertEventToCalendar = async ({
 
 export const updateEventSummary = async (
   eventId: string,
-  newSummary: string
+  newSummary: string,
+  retries = 3
 ) => {
   await auth.authorize();
 
-  try {
-    await calendar.events.patch({
-      auth,
-      calendarId,
-      eventId,
-      requestBody: {
-        summary: newSummary,
-      },
-    });
-  } catch (err) {
-    console.error(`Failed to update event summary for ${eventId}:`, err);
-    throw err;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      await calendar.events.patch({
+        auth,
+        calendarId,
+        eventId,
+        requestBody: { summary: newSummary },
+      });
+      return; // ✅ Success
+    } catch (err: any) {
+      const isRateLimit = err?.code === 403 && err?.errors?.[0]?.reason === 'rateLimitExceeded';
+      if (isRateLimit && attempt < retries - 1) {
+        const waitTime = Math.pow(2, attempt) * 1000;
+        console.warn(`Rate limit hit. Retrying in ${waitTime / 1000}s...`);
+        await new Promise((res) => setTimeout(res, waitTime));
+        continue;
+      }
+
+      console.error(`Failed to update event summary for ${eventId}:`, err);
+      throw err;
+    }
   }
 };

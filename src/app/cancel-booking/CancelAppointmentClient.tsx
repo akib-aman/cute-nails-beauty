@@ -119,14 +119,8 @@ export default function CancelAppointmentClient() {
         {cancelled && (
           <div className="text-center mt-8">
             <p className="text-lg text-gray-700 mb-6">
-              Your booking has been successfully cancelled.
+              Booking has been successfully cancelled and refunded to the customer.
             </p>
-            <Link
-              href="/"
-              className="inline-block bg-primary hover:bg-pink-600 text-white py-3 px-6 rounded-full shadow-lg transition"
-            >
-              Book a New Appointment
-            </Link>
           </div>
         )}
       </div>
