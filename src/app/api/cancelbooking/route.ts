@@ -84,15 +84,25 @@ export async function POST(req: NextRequest) {
           : 'Your appointment has been cancelled';
 
         const html = `
-          <p>Hi ${booking.name},</p>
-          <p>Your appointment has been successfully cancelled.</p>
-          ${
-            refunded
-              ? '<p>A full refund has been issued and should appear in your account within <strong>5 to 10 business days</strong>.</p>'
-              : ''
-          }
-          <p>If you have any questions or concerns, please contact us at <strong>0795 6044 691</strong>.</p>
-          <p>Thank you,<br/>Cute Nails & Beauty</p>
+          <div style="font-family: Arial, sans-serif; color: #333; padding: 16px; max-width: 600px; margin: auto;">
+            <h2 style="color: #cf5888;">Hi ${booking.name},</h2>
+            <p>Your appointment with <strong>Cute Edinburgh</strong> has been successfully cancelled.</p>
+
+            ${
+              refunded
+                ? `<p>A full refund has been issued and should appear in your account within <strong>5 to 10 business days</strong>.</p>`
+                : ''
+            }
+
+            <p>If you have any questions or concerns, please contact us directly at 
+              <a href="tel:+447956044691" style="color: #cf5888; text-decoration: none;">+44 7956 044 691</a>.
+            </p>
+
+            <p style="margin-bottom: 0;">Warm wishes,</p>
+            <p style="margin-top: 4px;">Cute Edinburgh</p>
+
+            <hr style="margin: 24px 0;" />
+          </div>
         `;
 
         await transporter.sendMail({
@@ -105,6 +115,7 @@ export async function POST(req: NextRequest) {
         console.error('Failed to send cancellation email:', emailErr);
       }
     }
+
 
     return NextResponse.json({ success: true, refunded });
   } catch (err) {
