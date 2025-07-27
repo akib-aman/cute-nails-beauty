@@ -36,6 +36,26 @@ function SuccessClient() {
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const router = useRouter();
 
+  const formatDateUK = (date: Date) => {
+  return date.toLocaleString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/London'
+  });
+};
+
+const formatTimeUK = (date: Date) => {
+  return date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/London'
+  });
+};
+
   useEffect(() => {
     (async () => {
       if (!sessionId) return;
@@ -87,7 +107,7 @@ function SuccessClient() {
                   {appointment ? (
                     <>
                       <p><strong>Email:</strong> {appointment.email}</p>
-                      <p><strong>Time:</strong> {new Date(appointment.start).toLocaleString()}</p>
+                      <p><strong>Time:</strong> {formatDateUK(new Date(appointment.start))}</p>
 
                       <p className="mt-4 font-semibold">Treatments:</p>
                       <ul className="list-disc list-inside">

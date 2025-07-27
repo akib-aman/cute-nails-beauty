@@ -11,6 +11,20 @@ type Appointment = {
   start: string;
   treatments: { name: string; price: number }[];
   total: number;
+  displayStart?: string; // Add this type for the formatted date from API
+};
+
+// Add this formatting function at the top of your component file
+const formatUKDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
 };
 
 export default function CancelAppointmentClient() {
@@ -86,7 +100,8 @@ export default function CancelAppointmentClient() {
           <>
             <div className="space-y-4 text-lg">
               <p><strong>Email:</strong> {appointment.email}</p>
-              <p><strong>Time:</strong> {new Date(appointment.start).toLocaleString()}</p>
+              {/* Use the formatUKDateTime function here */}
+              <p><strong>Time:</strong> {appointment.displayStart || formatUKDateTime(appointment.start)}</p>
               <div>
                 <p className="font-semibold">Treatments:</p>
                 <ul className="list-disc list-inside">

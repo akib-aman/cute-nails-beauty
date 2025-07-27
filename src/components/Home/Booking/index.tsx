@@ -65,6 +65,15 @@ const Booking = () => {
   const [payingNow,  setPayingNow]    = useState(false); // Pay now
   const [openSection, setOpenSection] = useState<string | null>(null);
 
+  const formatUKDateTime = (date: Date) => {
+    const day = date.getDate();
+    const month = date.toLocaleString('en-GB', { month: 'long' });
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year}, ${hours}:${minutes}`;
+  };
 
   // Fetch existing bookings on mount
   useEffect(() => {
@@ -443,12 +452,13 @@ const Booking = () => {
                   onChange={(d) => setDate(d)}
                   showTimeSelect
                   timeIntervals={15}
-                  dateFormat="MMMM d, yyyy h:mm aa" // Corrected dateFormat
+                  dateFormat="dd/MM/yyyy HH:mm"  // Changed to UK format
+                  timeCaption="Time (UK)"
                   minDate={new Date()}
                   maxDate={addDays(new Date(), 30)}
                   filterDate={(d) => !isSunday(d)}
                   filterTime={filterAvailableTimes}
-                  placeholderText="Pick a Date & Time!"
+                  placeholderText="Pick a Date & Time"
                   minTime={setHours(setMinutes(new Date(), 0), 10)}
                   maxTime={setHours(setMinutes(new Date(), 0), 17)}
                   className="w-full border p-2 rounded bg-gray-50"
@@ -470,7 +480,7 @@ const Booking = () => {
                 <strong>Phone number:</strong> {phonenumber}
               </p>
               <p>
-                <strong>Time:</strong> {date?.toLocaleString()}
+                <strong>Time:</strong> {date ? formatUKDateTime(date) : ''}
               </p>
               <p>
                 <strong>Treatments:</strong>

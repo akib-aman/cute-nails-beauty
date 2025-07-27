@@ -1,7 +1,8 @@
 // app/api/appointments/route.ts
 
 import { NextResponse } from 'next/server';
-import { parseISO, addMinutes, isBefore } from 'date-fns';
+import { parseISO, addMinutes } from 'date-fns';
+import { toDate } from 'date-fns-tz'; 
 import { PrismaClient } from '@prisma/client';
 import { insertEventToCalendar } from "@/lib/google-calendar"
 import nodemailer from 'nodemailer';
@@ -91,6 +92,26 @@ const formatDateForICS = (d: Date) => {
   );
 };
 
+const formatDateUK = (d: Date) =>
+  d.toLocaleString('en-GB', {
+    timeZone: 'Europe/London',
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+
+const formatTimeUK = (d: Date) =>
+  d.toLocaleTimeString('en-GB', {
+    timeZone: 'Europe/London',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+
 // ─────────────────────────────────────────────────────────────────
 // Build HTML email for client (includes an ICS download link)
 // ─────────────────────────────────────────────────────────────────
@@ -118,7 +139,8 @@ const createClientEmailBody = (
       <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
         <tr>
           <td style="padding: 8px; font-weight: bold;">Date & Time:</td>
-          <td style="padding: 8px;">${start.toLocaleString()} – ${end.toLocaleTimeString()}</td>
+          <td style="padding: 8px;">${formatDateUK(start)} – ${formatTimeUK(end)}</td>
+
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold; vertical-align: top;">Treatments:</td>
@@ -177,6 +199,7 @@ const createManagerEmailBody = (
 ) => {
   const eventStart = formatDateForICS(start);
   const eventEnd = formatDateForICS(end);
+
   const treatmentList = treatments
     .map((t) =>
       `<li style="margin-bottom: 4px;">${t.parent ? `<strong>${t.parent}</strong> – ` : ''}${t.name} – £${t.price.toFixed(2)}</li>`
@@ -198,7 +221,8 @@ const createManagerEmailBody = (
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold;">Date & Time:</td>
-          <td style="padding: 8px;">${start.toLocaleString()} – ${end.toLocaleTimeString()}</td>
+          <td style="padding: 8px;">${formatDateUK(start)} – ${formatTimeUK(end)}</td>
+
         </tr>
         <tr>
           <td style="padding: 8px; font-weight: bold; vertical-align: top;">Treatments:</td>
@@ -267,8 +291,8 @@ export async function POST(req: Request) {
       totalDuration += parseDuration(t.name);
     }
 
-    const startDate = parseISO(date);
-    const endDate = addMinutes(startDate, totalDuration);
+    const startDate = new Date(date); // Parse the ISO string directly
+    const endDate = new Date(startDate.getTime() + totalDuration * 60000); // Add duration in milliseconds
 
     // 3) Enforce max 3 bookings per email in last 24hrs
     const now = new Date();
@@ -394,13 +418,19 @@ export async function GET(req: Request) {
         );
       }
 
-      return NextResponse.json(booking);   // ✅ send it back
+      // Format dates for single booking response
+      const formattedBooking = {
+        ...booking,
+        displayStart: formatDateUK(booking.start),
+        displayEnd: formatTimeUK(booking.end)
+      };
+
+      return NextResponse.json(formattedBooking);
     }
 
-    /* -------------------- 2) existing “all bookings” logic ---------- */
-    // (your current cleanup + findMany code)
+    /* -------------------- 2) existing "all bookings" logic ---------- */
+    // Clean up old bookings
     await prisma.booking.deleteMany({ where: { end: { lt: new Date() } } });
-
     await prisma.booking.deleteMany({
       where: {
         status: 'PENDING',
@@ -413,9 +443,12 @@ export async function GET(req: Request) {
       orderBy: { start: "asc" },
     });
 
+    // Format dates for all bookings response
     const result = rows.map((b) => ({
-      start: b.start.toISOString(),
-      end:   b.end.toISOString(),
+      start: b.start.toISOString(), // Keep ISO for internal use
+      end: b.end.toISOString(),     // Keep ISO for internal use
+      displayStart: formatDateUK(b.start), // UK formatted date
+      displayEnd: formatTimeUK(b.end)      // UK formatted time without seconds
     }));
 
     return NextResponse.json(result);
