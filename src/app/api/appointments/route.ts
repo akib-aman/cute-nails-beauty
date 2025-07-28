@@ -1,8 +1,6 @@
 // app/api/appointments/route.ts
 
 import { NextResponse } from 'next/server';
-import { parseISO, addMinutes } from 'date-fns';
-import { toDate } from 'date-fns-tz'; 
 import { PrismaClient } from '@prisma/client';
 import { insertEventToCalendar } from "@/lib/google-calendar"
 import nodemailer from 'nodemailer';
